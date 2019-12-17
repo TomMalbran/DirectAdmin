@@ -92,23 +92,13 @@ class DirectAdmin {
         return $this->adapter->getPort();
     }
 
-
-
     /**
-     * Sets the Subuser
+     * Sets the Subuser and Domain for the Adapter
      * @param string $subuser
-     * @return void
-     */
-    public function setSubuser(string $subuser): void {
-        $this->adapter->setSubuser($subuser);
-    }
-
-    /**
-     * Sets the Domain
      * @param string $domain
      * @return void
      */
-    public function setDomain(string $domain): void {
-        $this->adapter->setDomain($domain);
+    public function setUser(string $subuser, string $domain): void {
+        $this->adapter->setUser($subuser, $domain);
     }
 }

@@ -1,8 +1,6 @@
 <?php
 namespace DirectAdmin;
 
-use DirectAdmin\DirectAdmin;
-
 /**
  * The Adapter Class
  */
@@ -14,10 +12,9 @@ class Adapter {
     private $user;
     private $username;
     private $password;
+
     private $subuser;
     private $domain;
-
-    private $socket;
     
     
     /**
@@ -33,66 +30,80 @@ class Adapter {
         $this->host     = $host;
         $this->port     = $port;
 
-        $this->user     = !empty($subuser) ? "$username|$subuser" : $username;
         $this->username = $username;
         $this->password = $password;
         $this->subuser  = $subuser;
         $this->domain   = $domain;
-        
-        $this->socket   = new DirectAdmin();
-        $this->socket->connect("https://{$this->host}", $this->port);
-        $this->socket->set_login($this->user, $this->password);
     }
-
+    
     /**
-     * Sets the Subuser for the Adapter
+     * Sets the Subuser and Domain for the Adapter
      * @param string $subuser
-     * @return void
-     */
-    public function setSubuser(string $subuser):void {
-        $this->user = "{$this->username}|$subuser";
-        $this->socket->set_login($this->user, $this->password);
-    }
-
-    /**
-     * Sets the Domain for the Adapter
      * @param string $domain
      * @return void
      */
-    public function setDomain(string $domain): void {
-        $this->domain = $domain;
+    public function setUser(string $subuser, string $domain): void {
+        $this->subuser = $subuser;
+        $this->domain  = $domain;
     }
     
     
 
     /**
      * Does a query over the server
-     * @param string  $request
+     * @param string  $endPoint
      * @param array   $params   Optional.
      * @param string  $method   Optional.
      * @param boolean $parse    Optional.
      * @param boolean $withDots Optional.
      * @return array
      */
-    public function query(string $request, array $params = [], string $method = "GET", bool $parse = true, bool $withDots = false): array {
-        $this->socket->set_method($method);
-        $this->socket->query($request, $params);
-        $result = $this->socket->fetch_body();
-        
+    public function query(string $endPoint, array $params = [], string $method = "GET", bool $parse = true, bool $withDots = false): array {
+        $user    = !empty($this->subuser) ? "{$this->username}|{$this->subuser}" : $this->username;
+        $request = "https://{$this->host}:{$this->port}{$endPoint}";
+
+        if ($method == "GET") {
+            $request .= "?" . http_build_query($params);
+        }
+        $options = [
+            CURLOPT_HTTP_VERSION    => CURL_HTTP_VERSION_1_1,
+            CURLOPT_URL             => $request,
+			CURLOPT_USERPWD         => "$user:{$this->password}",
+            CURLOPT_RETURNTRANSFER  => true,
+            CURLOPT_HEADER          => false,
+            CURLOPT_SSL_VERIFYPEER  => false,
+            CURLOPT_SSL_VERIFYHOST  => false,
+            CURLOPT_FAILONERROR     => true,
+            CURLOPT_FORBID_REUSE    => true,
+            CURLOPT_TIMEOUT         => 100,
+            CURLOPT_CONNECTTIMEOUT  => 10,
+            CURLOPT_LOW_SPEED_LIMIT => 512,
+            CURLOPT_LOW_SPEED_TIME  => 120,
+        ];
+        if ($method == "POST") {
+            $options += [
+                CURLOPT_POST       => 1,
+                CURLOPT_POSTFIELDS => $params,
+            ];
+        }
+
+        // Execute the query
+        [ $result, $error, $errno ] = $this->execute($options);
+        if (!empty($error)) {
+            return Response::error("CURL ERROR: $error");
+        }
+
         if (!empty($result) && strpos($result, "<title>DirectAdmin Login</title>") !== false) {
-            return new Response([
-                "error"     => 1,
-                "error_msg" => "WRONG USERNAME OR PASSWORD",
-            ]);
+            return Response::error("WRONG USERNAME OR PASSWORD");
         }
         
-        $result = $this->socket->fetch_body();
+        // Decode the response and parse it to an array.
         if ($parse) {
             if ($withDots) {
                 $result = str_replace("%2E", "___", $result);
             }
-            parse_str($result, $x);
-            return new Response($x);
+            parse_str(urldecode($result), $response);
+            return new Response($response);
         }
         return new Response($result);
     }
@@ -106,24 +117,17 @@ class Adapter {
      * @param string $password
      * @return string
      */
-    public function postFileFTP(string $path, string $fileName, string $filePath, string $user, string $password): string {
-        $url     = "ftp://{$this->host}{$path}/{$fileName}";
-        $userpwd = "{$user}:{$password}";
-        
-        $curl = curl_init();
-        curl_setopt_array($curl, [
+    public function uploadFile(string $path, string $fileName, string $filePath, string $user, string $password): string {
+        $url = "ftp://{$this->host}{$path}/{$fileName}";
+
+        [ $result, $error, $errno ] = $this->execute([
             CURLOPT_URL        => $url,
-            CURLOPT_USERPWD    => $userpwd,
+            CURLOPT_USERPWD    => "{$user}:{$password}",
             CURLOPT_HTTPAUTH   => CURLAUTH_BASIC,
             CURLOPT_UPLOAD     => 1,
             CURLOPT_INFILE     => fopen($filePath, "r"),
             CURLOPT_INFILESIZE => filesize($filePath),
         ]);
-        
-        $result = curl_exec($curl);
-        $error  = curl_error($curl);
-        $errno  = curl_errno($curl);
-        curl_close($curl);
         
         // print("$url $userpwd ($errno) $error");
         if (!empty($errno)) {
@@ -133,20 +137,20 @@ class Adapter {
     }
 
     /**
-     * Parses the request and returns an error or an array with the content
-     * @param array $request
+     * Execute a Curl request
+     * @param array $options
      * @return array
      */
-    public function getListResult(array $request): array {
-        if (!empty($request) && !empty($request["error"])) {
-            return [ "error" => true ];
-        }
-        if (!empty($request["list"])) {
-            return $request["list"];
-        }
-        return [];
+    private function execute(array $options): array {
+        $curl = curl_init();
+        curl_setopt_array($curl, $options);
+        $result = curl_exec($curl);
+        $error  = curl_error($curl);
+        $errno  = curl_errno($curl);
+        curl_close($curl);
+        return [ $result, $error, $errno ];
     }
-    
+
     
 
     /**
