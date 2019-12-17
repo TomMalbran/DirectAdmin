@@ -2,6 +2,7 @@
 namespace DirectAdmin\File;
 
 use DirectAdmin\Adapter;
+use DirectAdmin\Response;
 
 /**
  * The Server Files
@@ -25,23 +26,20 @@ class File {
      * @param string $path
      * @return array
      */
-    public function getAll($path) {
-        $request = $this->adapter->query("/CMD_API_FILE_MANAGER", [ "path" => $path ]);
-        $parent  = str_replace(".", "_", substr($path, 0, strrpos($path, "/")));
-        $result  = [];
+    public function getAll(string $path): array {
+        $response = $this->adapter->query("/CMD_API_FILE_MANAGER", [ "path" => $path ]);
+        $parent   = str_replace(".", "_", substr($path, 0, strrpos($path, "/")));
+        $result   = [];
         
-        if (!empty($request) && empty($request["error"])) {
-            foreach ($request as $filePath => $fileData) {
-                if (!empty($fileData) && is_string($fileData) && $filePath != $parent && $filePath != "/") {
-                    parse_str($fileData, $x);
-                    if (!empty($x)) {
-                        $result[] = $x;
-                    }
+        foreach ($response->data as $filePath => $fileData) {
+            if (!empty($fileData) && is_string($fileData) && $filePath != $parent && $filePath != "/") {
+                parse_str($fileData, $x);
+                if (!empty($x)) {
+                    $result[] = $x;
                 }
             }
-            return $result;
         }
-        return $request;
+        return $result;
     }
     
     /**
@@ -50,18 +48,18 @@ class File {
      * @param string $name
      * @return boolean
      */
-    public function exists($path, $name) {
-        $result = $this->getSize($path, $name);
-        return !empty($result["error"]);
+    public function exists(string $path, string $name): bool {
+        $response = $this->getSize($path, $name);
+        return !$response->hasError;
     }
 
     /**
      * Returns the Size of a File/Directory. Requires user login
      * @param string $path
      * @param string $name
-     * @return array|null
+     * @return Response
      */
-    public function getSize($path, $name) {
+    public function getSize(string $path, string $name): Response {
         $fullPath = $this->adapter->getPublicPath($path);
         return $this->adapter->query("/CMD_API_FILE_MANAGER", [
             "action" => "filesize",
@@ -76,9 +74,9 @@ class File {
      * @param string $path
      * @param string $name
      * @param string $text
-     * @return array|null
+     * @return Response
      */
-    public function edit($path, $name, $text) {
+    public function edit(string $path, string $name, string $text): Response {
         $fullPath = $this->adapter->getPublicPath($path);
         return $this->adapter->query("/CMD_API_FILE_MANAGER", [
             "action"   => "edit",
@@ -97,13 +95,12 @@ class File {
      * @param string $password
      * @return string
      */
-    public function upload($path, $fileName, $filePath, $username, $password) {
-        return $this->adapter->postFileFTP($path, $fileName, $filePath, $username, $password);
+    public function upload(string $path, string $fileName, string $filePath, string $username, string $password): string {
+        return $this->adapter->uploadFile($path, $fileName, $filePath, $username, $password);
     }
 
     /**
      * Uploads a File to the server creating an FTP user
-     * @param string $domain
      * @param string $username
      * @param string $path
      * @param string $fileName
@@ -111,16 +108,22 @@ class File {
      * @param string $password
      * @return string
      */
-    public function uploadFTP($domain, $username, $path, $fileName, $filePath, $password) {
-        $ftp  = "raq";
-        $ftps = $this->adapter->query("/CMD_API_FTP", [ "domain" => $domain ]);
-        $pdom = "@" . str_replace(".", "_", $domain);
+    public function uploadFTP(string $username, string $path, string $fileName, string $filePath, string $password): string {
+        $ftp      = "kappa";
+        $domain   = $this->adapter->getDomain();
+        $response = $this->adapter->query("/CMD_API_FTP", [ "domain" => $domain ]);
+        $pdom     = "@" . str_replace(".", "_", $domain);
+        
+        if ($response->hasError) {
+            return "";
+        }
         
         $index  = 0;
         $fields = [];
-        foreach (array_keys($ftps) as $name) {
+        foreach ($response->keys as $name) {
             if (strpos($name, $pdom) !== FALSE) {
-                $fields["select" . $index] = str_replace($pdom, "", $name);
+                $fields["select$index"] = str_replace($pdom, "", $name);
+                $index += 1;
             }
         }
         if (!empty($fields)) {
@@ -138,7 +141,7 @@ class File {
             "passwd"     => $password,
             "passwd2"    => $password,
         ]);
-        $result = $this->adapter->postFileFTP($path, $fileName, $filePath, "$ftp@$domain", $password);
+        $result = $this->adapter->uploadFile($path, $fileName, $filePath, "$ftp@$domain", $password);
         
         $this->adapter->query("/CMD_API_FTP", [
             "action"  => "delete",
@@ -155,19 +158,20 @@ class File {
      * @param string $file
      * @return string
      */
-    public function download($path, $file) {
-        return $this->adapter->query("/CMD_FILE_MANAGER", [
+    public function download(string $path, string $file): string {
+        $response = $this->adapter->query("/CMD_FILE_MANAGER", [
             "path" => "$path/$file",
         ], "GET", false);
+        return $response->data;
     }
     
     /**
      * Extracts the given File. Requires user login
      * @param string $path
      * @param string $file
-     * @return array|null
+     * @return Response
      */
-    public function extract($path, $file) {
+    public function extract(string $path, string $file): Response {
         $fullPath = $this->adapter->getPublicPath($path);
         return $this->adapter->query("/CMD_API_FILE_MANAGER", [
             "action"    => "extract",
@@ -183,9 +187,9 @@ class File {
      * @param string  $oldName
      * @param string  $newName
      * @param boolean $overwrite Optional.
-     * @return array|null
+     * @return Response
      */
-    public function rename($path, $oldName, $newName, $overwrite = false) {
+    public function rename(string $path, string $oldName, string $newName, bool $overwrite = false): Response {
         $fullPath = $this->adapter->getPublicPath($path);
         return $this->adapter->query("/CMD_API_FILE_MANAGER", [
             "action"    => "rename",
@@ -202,9 +206,9 @@ class File {
      * @param string  $oldName
      * @param string  $newName
      * @param boolean $overwrite Optional.
-     * @return array|null
+     * @return Response
      */
-    public function duplicate($path, $oldName, $newName, $overwrite = false) {
+    public function duplicate(string $path, string $oldName, string $newName, bool $overwrite = false): Response {
         $fullPath = $this->adapter->getPublicPath($path);
         return $this->adapter->query("/CMD_API_FILE_MANAGER", [
             "action"    => "copy",
@@ -219,9 +223,9 @@ class File {
      * Resets a File's/Directory's owner. Requires user login
      * @param string $path
      * @param string $file
-     * @return array|null
+     * @return Response
      */
-    public function resetOwner($path, $file) {
+    public function resetOwner(string $path, string $file): Response {
         $fullPath = $this->adapter->getPublicPath($path);
         return $this->adapter->query("/CMD_API_FILE_MANAGER", [
             "action" => "resetowner",
@@ -231,93 +235,82 @@ class File {
     
     /**
      * Sets the Permissions for the given Files/Directories. Requires user login
-     * @param string   $path
-     * @param string   $chmod
-     * @param string[] $files
-     * @return array|null
+     * @param string          $path
+     * @param string          $chmod
+     * @param string[]|string $files
+     * @return Response
      */
-    public function setPermission($path, $chmod, array $files) {
-        $fullPath = $this->adapter->getPublicPath($path);
-        $fields   = [
-            "action" => "multiple",
+    public function setPermission(string $path, string $chmod, $files): Response {
+        $fields = $this->createFields([
             "button" => "permission",
             "chmod"  => $chmod,
-            "path"   => $path,
-        ];
-        foreach ($files as $index => $file) {
-            $fields["select" . $index] = "$fullPath/$file";
-        }
+        ], $path, $files);
         return $this->adapter->query("/CMD_API_FILE_MANAGER", $fields);
     }
     
     /**
      * Moves the given Files/Directories from a path to another path. Requires user login
-     * @param string   $fromPath
-     * @param string   $toPath
-     * @param string[] $files
-     * @return array|null
+     * @param string          $fromPath
+     * @param string          $toPath
+     * @param string[]|string $files
+     * @return Response
      */
-    public function move($fromPath, $toPath, array $files) {
-        $result = $this->addToClipboard($fromPath, $files);
-        if (empty($result["error"])) {
-            $result = $this->doInClipboard("move", $toPath);
-            $this->doInClipboard("empty");
+    public function move(string $fromPath, string $toPath, $files): Response {
+        $response = $this->addToClipboard($fromPath, $files);
+        if (!$response->hasError) {
+            $this->doInClipboard("move", $toPath);
+            return $this->doInClipboard("empty");
         }
-        return $result;
+        return $response;
     }
     
     /**
      * Copies the given Files/Directories from a path to another path. Requires user login
-     * @param string   $fromPath
-     * @param string   $toPath
-     * @param string[] $files
-     * @return array|null
+     * @param string          $fromPath
+     * @param string          $toPath
+     * @param string[]|string $files
+     * @return Response
      */
-    public function copy($fromPath, $toPath, array $files) {
-        $result = $this->addToClipboard($fromPath, $files);
-        if (empty($result["error"])) {
-            $result = $this->doInClipboard("copy", $toPath);
-            $this->doInClipboard("empty");
+    public function copy(string $fromPath, string $toPath, $files): Response {
+        $response = $this->addToClipboard($fromPath, $files);
+        if (!$response->hasError) {
+            $this->doInClipboard("copy", $toPath);
+            return $this->doInClipboard("empty");
         }
-        return $result;
+        return $response;
     }
     
     /**
      * Compresses the given Files/Directories. Requires user login
-     * @param string   $path
-     * @param string   $name
-     * @param string[] $files
-     * @return array|null
+     * @param string          $path
+     * @param string          $name
+     * @param string[]|string $files
+     * @return Response
      */
-    public function compress($path, $name, array $files) {
-        $result = $this->addToClipboard($path, $files);
-        if (empty($result["error"])) {
-            $result = $this->adapter->query("/CMD_API_FILE_MANAGER", [
+    public function compress(string $path, string $name, $files): Response {
+        $response = $this->addToClipboard($path, $files);
+        if (!$response->hasError) {
+            $response = $this->adapter->query("/CMD_API_FILE_MANAGER", [
                 "action" => "compress",
                 "path"   => $path,
                 "file"   => $name,
             ]);
-            $this->doInClipboard("empty");
+            return $this->doInClipboard("empty");
         }
-        return $result;
+        return $response;
     }
     
     /**
      * Deletes the given Files/Directories. Requires user login
-     * @param string   $path
-     * @param string[] $files
-     * @return array|null
+     * @param string          $path
+     * @param string[]|string $files
+     * @return Response
      */
-    public function delete($path, array $files) {
-        $fullPath = $this->adapter->getPublicPath($path);
-        $fields   = [
-            "action" => "multiple",
+    public function delete(string $path, $files): Response {
+        $fields = $this->createFields([
             "button" => "delete",
-            "path"   => $path,
-        ];
-        foreach ($files as $index => $file) {
-            $fields["select" . $index] = "$fullPath/$file";
-        }
+            "chmod"  => $chmod,
+        ], $path, $files);
         return $this->adapter->query("/CMD_API_FILE_MANAGER", $fields);
     }
     
@@ -325,35 +318,52 @@ class File {
     
     /**
      * Adds the given Files/Directories to the clipboard. Requires user login
-     * @param string   $path
-     * @param string[] $files
-     * @return array|null
+     * @param string          $path
+     * @param string[]|string $files
+     * @return Response
      */
-    public function addToClipboard($path, array $files) {
-        $fullPath = $this->adapter->getPublicPath($path);
-        $fields   = [
-            "action" => "multiple",
-            "add"    => "clipboard",
-            "path"   => $path,
-        ];
-        foreach ($files as $index => $file) {
-            $fields["select" . $index] = "$fullPath/$file";
-        }
+    public function addToClipboard(string $path, $files): Response {
+        $fields = $this->createFields([
+            "add"   => "clipboard",
+            "chmod" => $chmod,
+        ], $path, $files);
         return $this->adapter->query("/CMD_API_FILE_MANAGER", $fields);
     }
     
     /**
      * Moves/Copies/Deletes the Clipboard Files/Directories. Requires user login
      * @param string $action
-     * @param string $path
-     * @return array|null
+     * @param string $path   Optional.
+     * @return Response
      */
-    public function doInClipboard($action, $path = "") {
+    public function doInClipboard(string $action, string $path = ""): Response {
+        $fields = $this->createFields([ $action => "clipboard" ], $path);
+        return $this->adapter->query("/CMD_API_FILE_MANAGER", $fields);
+    }
+
+
+
+    /**
+     * Returns the Fields for multiple Files
+     * @param array           $fields
+     * @param string          $path
+     * @param string[]|string $file   Optional.
+     * @return array
+     */
+    private function createFields(array $fields, string $path, $file = null): array {
         $fullPath = $this->adapter->getPublicPath($path);
-        return $this->adapter->query("/CMD_API_FILE_MANAGER", [
-            "action" => "multiple",
-            $action  => "clipboard",
-            "path"   => $fullPath,
-        ]);
+        $files    = !is_array($file) ? [ $file ] : $file;
+
+        $fields["action"] = "multiple";
+        $fields["path"]   = $fullPath;
+        
+        $index = 0;
+        foreach ($files as $file) {
+            if (!empty($file)) {
+                $fields["select$index"] = "$fullPath/$file";
+                $index += 1;
+            }
+        }
+        return $fields;
     }
 }
