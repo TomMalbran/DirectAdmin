@@ -1,0 +1,20 @@
+{
+    "name": "tommalbran/directadmin",
+    "description": "A DirectAdmin wrapper",
+    "authors": [
+        {
+            "name": "Tomás Malbrán",
+            "homepage": "https://github.com/TomMalbran"
+        }
+    ],
+    "require": {
+        "php": "^7.1",
+        "ext-curl": "*",
+        "directadmin/directadmin": "dev-master"
+    },
+    "autoload": {
+        "psr-4": {
+            "DirectAdmin\\": "src"
+        }
+    }
+}
