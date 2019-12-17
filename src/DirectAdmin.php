@@ -41,11 +41,11 @@ class DirectAdmin {
      * @param integer $port
      * @param string  $username
      * @param string  $password
-     * @param string  $subuser  Optional.
+     * @param string  $user     Optional.
      * @param string  $domain   Optional.
      */
-    public function __construct(string $host, int $port, string $username, string $password, string $subuser = "", string $domain = "") {
-        $this->adapter    = new Adapter($host, $port, $username, $subuser, $password, $domain);
+    public function __construct(string $host, int $port, string $username, string $password, string $user = "", string $domain = "") {
+        $this->adapter    = new Adapter($host, $port, $username, $password, $user, $domain);
         
         $this->service    = new Admin\Service($this->adapter);
         $this->loginKey   = new Admin\LoginKey($this->adapter);

@@ -9,11 +9,10 @@ class Adapter {
     private $host;
     private $port;
 
-    private $user;
     private $username;
     private $password;
 
-    private $subuser;
+    private $user;
     private $domain;
     
     
@@ -23,28 +22,28 @@ class Adapter {
      * @param integer $port
      * @param string  $username
      * @param string  $password
-     * @param string  $subuser  Optional.
+     * @param string  $user     Optional.
      * @param string  $domain   Optional.
      */
-    public function __construct(string $host, int $port, string $username, string $password, string $subuser = "", string $domain = "") {
+    public function __construct(string $host, int $port, string $username, string $password, string $user = "", string $domain = "") {
         $this->host     = $host;
         $this->port     = $port;
 
         $this->username = $username;
         $this->password = $password;
-        $this->subuser  = $subuser;
+        $this->user     = $user;
         $this->domain   = $domain;
     }
     
     /**
      * Sets the Subuser and Domain for the Adapter
-     * @param string $subuser
+     * @param string $user
      * @param string $domain
      * @return void
      */
-    public function setUser(string $subuser, string $domain): void {
-        $this->subuser = $subuser;
-        $this->domain  = $domain;
+    public function setUser(string $user, string $domain): void {
+        $this->user   = $user;
+        $this->domain = $domain;
     }
     
     
@@ -54,12 +53,11 @@ class Adapter {
      * @param string  $endPoint
      * @param array   $params   Optional.
      * @param string  $method   Optional.
-     * @param boolean $parse    Optional.
      * @param boolean $withDots Optional.
-     * @return array
+     * @return Response
      */
-    public function query(string $endPoint, array $params = [], string $method = "GET", bool $parse = true, bool $withDots = false): array {
-        $user    = !empty($this->subuser) ? "{$this->username}|{$this->subuser}" : $this->username;
+    public function query(string $endPoint, array $params = [], string $method = "GET", bool $withDots = false): Response {
+        $user    = !empty($this->user) ? "{$this->username}|{$this->user}" : $this->username;
         $request = "https://{$this->host}:{$this->port}{$endPoint}";
 
         if ($method == "GET") {
@@ -98,14 +96,10 @@ class Adapter {
         }
         
         // Decode the response and parse it to an array.
-        if ($parse) {
-            if ($withDots) {
-                $result = str_replace("%2E", "___", $result);
-            }
-            parse_str(urldecode($result), $response);
-            return new Response($response);
+        if ($withDots) {
+            $result = str_replace("%2E", "___", $result);
         }
-        return new Response($result);
+        return Response::parse($result);
     }
     
     /**
