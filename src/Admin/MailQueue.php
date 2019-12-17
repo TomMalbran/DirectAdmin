@@ -72,8 +72,8 @@ class MailQueue {
         $fields = [ "action" => "select" ];
         $fields[$operation] = 1;
         
-        foreach ($mailIDs as $key => $value) {
-            $fields["select" . $key] = $value;
+        foreach ($mailIDs as $index => $value) {
+            $fields["select$index"] = $value;
         }
         return $this->adapter->query("/CMD_API_MAIL_QUEUE", $fields);
     }

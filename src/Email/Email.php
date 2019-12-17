@@ -197,8 +197,8 @@ class Email {
             "file"   => $file,
             "what"   => $what,
         ];
-        foreach ($users as $key => $value) {
-            $fields["select$key"] = $value;
+        foreach ($users as $index => $value) {
+            $fields["select$index"] = $value;
         }
         return $this->adapter->query("/CMD_EMAIL_POP", $fields);
     }

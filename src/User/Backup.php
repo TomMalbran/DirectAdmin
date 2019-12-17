@@ -75,8 +75,8 @@ class Backup {
                 "domain" => $domain,
                 "file"   => $name,
             ];
-            foreach ($data as $index => $select) {
-                $fields["select" . $index] = $select;
+            foreach ($data as $index => $value) {
+                $fields["select$index"] = $value;
             }
             return $this->adapter->query("/CMD_API_SITE_BACKUP", $fields);
         }

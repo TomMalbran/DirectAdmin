@@ -154,8 +154,8 @@ class User {
         $usernames = is_array($username) ? $username : [ $username ];
         $fields    = $suspend ? [ "dosuspend" => "Suspend" ] : [ "dounsuspend" => "Unsuspend" ];
         
-        foreach ($usernames as $key => $value) {
-            $fields["select" . $key] = $value;
+        foreach ($usernames as $index => $value) {
+            $fields["select$index"] = $value;
         }
         return $this->adapter->query("/CMD_API_SELECT_USERS", $fields, "POST");
     }
