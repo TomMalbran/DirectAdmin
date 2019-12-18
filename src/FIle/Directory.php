@@ -2,6 +2,7 @@
 namespace DirectAdmin\File;
 
 use DirectAdmin\Adapter;
+use DirectAdmin\Response;
 
 /**
  * The Server Directories
@@ -24,22 +25,23 @@ class Directory {
      * Returns the protections for the given Directory. Requires user login
      * @param string $path
      * @param string $name
-     * @return array
+     * @return Response
      */
-    public function getProtections($path, $name) {
-        $request = $this->adapter->query("/CMD_API_FILE_MANAGER", [
+    public function getProtections(string $path, string $name): Response {
+        $fullPath = $this->adapter->getPublicPath($path);
+        $response = $this->adapter->get("/CMD_API_FILE_MANAGER", [
             "action" => "protect",
-            "path"   => $path . "/" . $name,
+            "path"   => "$fullPath/$name",
         ]);
         
-        if (!empty($request) && empty($request["error"])) {
-            return [
-                "text"      => $request["name"],
-                "username"  => !empty($request[0]) ? $request[0] : "",
-                "isEnabled" => $request["enabled"] == "yes",
-            ];
+        if (!$response->error) {
+            return new Response([
+                "text"      => $response->data["name"],
+                "username"  => !empty($response->data[0]) ? $response->data[0] : "",
+                "isEnabled" => $response->data["enabled"] == "yes",
+            ]);
         }
-        return $request;
+        return $response;
     }
     
 
@@ -48,11 +50,11 @@ class Directory {
      * Makes a new Directory. Requires user login
      * @param string $path
      * @param string $name
-     * @return array|null
+     * @return Response
      */
-    public function create($path, $name) {
+    public function create(string $path, string $name): Response {
         $fullPath = $this->adapter->getPublicPath($path);
-        return $this->adapter->query("/CMD_API_FILE_MANAGER", [
+        return $this->adapter->get("/CMD_API_FILE_MANAGER", [
             "action" => "folder",
             "path"   => $fullPath,
             "name"   => $name,
@@ -67,12 +69,13 @@ class Directory {
      * @param string  $username
      * @param string  $password
      * @param boolean $isEnabled
-     * @return array|null
+     * @return Response
      */
-    public function protect($path, $name, $text, $username, $password, $isEnabled) {
-        $fields = [
+    public function protect(string $path, string $name, string $text, string $username, string $password, bool $isEnabled): Response {
+        $fullPath = $this->adapter->getPublicPath($path);
+        $fields   = [
             "action"  => "protect",
-            "path"    => $path . "/" . $name,
+            "path"    => "$fullPath/$name",
             "name"    => $text,
             "user"    => $username,
             "passwd"  => $password,
@@ -81,7 +84,7 @@ class Directory {
         if ($isEnabled) {
             $fields["enabled"] = "yes";
         }
-        return $this->adapter->query("/CMD_API_FILE_MANAGER", $fields, "POST");
+        return $this->adapter->post("/CMD_API_FILE_MANAGER", $fields);
     }
     
     /**
@@ -89,22 +92,23 @@ class Directory {
      * @param string $path
      * @param string $name
      * @param string $username
-     * @return array|null
+     * @return Response
      */
-    public function unprotect($path, $name, $username) {
-        $result1 = $this->adapter->query("/CMD_API_FILE_MANAGER", [
+    public function unprotect(string $path, string $name, string $username): Response {
+        $fullPath = $this->adapter->getPublicPath($path);
+        $response = $this->adapter->get("/CMD_API_FILE_MANAGER", [
             "action"  => "delete",
-            "path"    => $path . "/" . $name,
+            "path"    => "$fullPath/$name",
             "select0" => $username,
         ]);
-        if (!empty($result1["error"])) {
-            return $result1;
+        if ($response->hasError) {
+            return $response;
         }
         
-        return $this->adapter->query("/CMD_API_FILE_MANAGER", [
+        return $this->adapter->post("/CMD_API_FILE_MANAGER", [
             "action" => "protect",
-            "path"   => $path . "/" . $name,
+            "path"   => "$fullPath/$name",
             "name"   => " ",
-        ], "POST");
+        ]);
     }
 }
