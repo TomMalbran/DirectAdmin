@@ -2,6 +2,7 @@
 namespace DirectAdmin\Domain;
 
 use DirectAdmin\Adapter;
+use DirectAdmin\Response;
 
 /**
  * The Server Redirects
@@ -21,54 +22,50 @@ class Redirect {
     
     
     /**
-     * Returns a list of redirects. Requires user login
-     * @param string $domain
+     * Returns a list of Redirects. Requires user login
      * @return array
      */
-    public function getAll($domain) {
-        $request = $this->adapter->query("/CMD_API_REDIRECT", [ "domain" => $domain ]);
-        $result  = [];
+    public function getAll(): array {
+        $result   = [];
+        $response = $this->adapter->get("/CMD_API_REDIRECT", [
+            "domain" => $this->adapter->getDomain(),
+        ]);
         
-        if (!empty($request) && empty($request["error"])) {
-            foreach ($request as $from => $to) {
-                $result[] = [
-                    "from" => $from,
-                    "to"   => $to,
-                ];
-            }
-            return $result;
+        foreach ($response->data as $from => $to) {
+            $result[] = [
+                "from" => $from,
+                "to"   => $to,
+            ];
         }
-        return $request;
+        return $result;
     }
     
     
     
     /**
-     * Adds a new Redirect for the given domain. Requires user login
-     * @param string $domain
+     * Adds a new Redirect. Requires user login
      * @param string $from
      * @param string $to
-     * @return array|null
+     * @return Response
      */
-    public function create($domain, $from, $to) {
-        return $this->adapter->query("/CMD_API_REDIRECT", [
+    public function create(string $from, string $to): Response {
+        return $this->adapter->post("/CMD_API_REDIRECT", [
             "action" => "add",
-            "domain" => $domain,
+            "domain" => $this->adapter->getDomain(),
             "from"   => $from,
             "to"     => $to,
         ]);
     }
     
     /**
-     * Deletes the given Redirect from the given domain. Requires user login
-     * @param string $domain
+     * Deletes the given Redirect. Requires user login
      * @param string $from
-     * @return array|null
+     * @return Response
      */
-    public function delete($domain, $from) {
-        return $this->adapter->query("/CMD_API_REDIRECT", [
+    public function delete(string $from): Response {
+        return $this->adapter->post("/CMD_API_REDIRECT", [
             "action"  => "delete",
-            "domain"  => $domain,
+            "domain"  => $this->adapter->getDomain(),
             "select0" => $from,
         ]);
     }

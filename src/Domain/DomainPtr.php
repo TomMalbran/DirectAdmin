@@ -2,6 +2,7 @@
 namespace DirectAdmin\Domain;
 
 use DirectAdmin\Adapter;
+use DirectAdmin\Response;
 
 /**
  * The Server Domain Pointers
@@ -21,21 +22,20 @@ class DomainPtr {
     
     
     /**
-     * Returns a list of Domain Pointers for the given domain. Requires user login
-     * @param string $domain
+     * Returns a list of Domain Pointers. Requires user login
      * @return array
      */
-    public function getAll($domain) {
-        $request = $this->adapter->query("/CMD_API_DOMAIN_POINTER", [ "domain" => $domain ]);
-        $result  = [];
+    public function getAll(): array {
+        $result   = [];
+        $response = $this->adapter->get("/CMD_API_DOMAIN_POINTER", [
+            "domain" => $this->adapter->getDomain(),
+        ]);
         
-        if (!empty($request) && empty($request["error"])) {
-            foreach ($request as $from => $alias) {
-                $result[] = [
-                    "name"    => str_replace("_", ".", $from),
-                    "isAlias" => $alias == "alias",
-                ];
-            }
+        foreach ($response->data as $from => $alias) {
+            $result[] = [
+                "name"    => str_replace("_", ".", $from),
+                "isAlias" => $alias == "alias",
+            ];
         }
         return $result;
     }
@@ -43,34 +43,32 @@ class DomainPtr {
     
     
     /**
-     * Creates a new Domain Pointer for the given domain. Requires user login
-     * @param string  $domain
+     * Creates a new Domain Pointer. Requires user login
      * @param string  $from
      * @param boolean $isAlias Optional.
-     * @return array|null
+     * @return Response
      */
-    public function create($domain, $from, $isAlias = true) {
+    public function create(string $from, bool $isAlias = true): Response {
         $fields = [
             "action" => "add",
-            "domain" => $domain,
+            "domain" => $this->adapter->getDomain(),
             "from"   => $from,
         ];
         if ($isAlias) {
             $fields["alias"] = "yes";
         }
-        return $this->adapter->query("/CMD_API_DOMAIN_POINTER", $fields);
+        return $this->adapter->post("/CMD_API_DOMAIN_POINTER", $fields);
     }
     
     /**
-     * Deletes the given Domain Pointer from the given domain. Requires user login
-     * @param string $domain
+     * Deletes the given Domain Pointer. Requires user login
      * @param string $from
-     * @return array|null
+     * @return Response
      */
-    public function delete($domain, $from) {
-        return $this->adapter->query("/CMD_API_DOMAIN_POINTER", [
+    public function delete(string $from): Response {
+        return $this->adapter->post("/CMD_API_DOMAIN_POINTER", [
             "action"  => "delete",
-            "domain"  => $domain,
+            "domain"  => $this->adapter->getDomain(),
             "select0" => $from,
         ]);
     }

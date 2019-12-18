@@ -2,6 +2,7 @@
 namespace DirectAdmin\Domain;
 
 use DirectAdmin\Adapter;
+use DirectAdmin\Response;
 
 /**
  * The Server Subdomains
@@ -22,41 +23,40 @@ class Subdomain {
     
     /**
      * Returns a list of Subdomains. Requires user login
-     * @param string $domain
      * @return string[]
      */
-    public function getAll($domain) {
-        $request = $this->adapter->query("/CMD_API_SUBDOMAINS", [ "domain" => $domain ]);
-        return (!empty($request) && empty($request["error"]) && !empty($request["list"])) ? $request["list"] : [];
+    public function getAll(): array {
+        $response = $this->adapter->get("/CMD_API_SUBDOMAINS", [
+            "domain" => $this->adapter->getDomain(),
+        ]);
+        return $response->list;
     }
     
     
     
     /**
-     * Creates a new Subdomain for the given domain. Requires user login
-     * @param string $domain
+     * Creates a new Subdomain. Requires user login
      * @param string $subdomain
-     * @return array|null
+     * @return Response
      */
-    public function create($domain, $subdomain) {
-        return $this->adapter->query("/CMD_API_SUBDOMAINS", [
+    public function create(string $subdomain): Response {
+        return $this->adapter->post("/CMD_API_SUBDOMAINS", [
             "action"    => "create",
-            "domain"    => $domain,
+            "domain"    => $this->adapter->getDomain(),
             "subdomain" => $subdomain,
         ]);
     }
     
     /**
-     * Deletes the given Subdomain for the given domain. Requires user login
-     * @param string  $domain
+     * Deletes the given Subdomain. Requires user login
      * @param string  $subdomain
      * @param boolean $delContents Optional.
-     * @return array|null
+     * @return Response
      */
-    public function delete($domain, $subdomain, $delContents = false) {
-        return $this->adapter->query("/CMD_API_SUBDOMAINS", [
+    public function delete(string $subdomain, bool $delContents = false): Response {
+        return $this->adapter->post("/CMD_API_SUBDOMAINS", [
             "action"   => "delete",
-            "domain"   => $domain,
+            "domain"   => $this->adapter->getDomain(),
             "select0"  => $subdomain,
             "contents" => $delContents ? "yes" : "no",
         ]);
