@@ -188,7 +188,7 @@ class Adapter {
      * @return string
      */
     public function getDomain(): string {
-        return $this->port;
+        return $this->domain;
     }
 
     /**
