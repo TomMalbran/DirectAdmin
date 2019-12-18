@@ -2,6 +2,7 @@
 namespace DirectAdmin\User;
 
 use DirectAdmin\Adapter;
+use DirectAdmin\Response;
 
 /**
  * The User Backups
@@ -22,25 +23,25 @@ class Backup {
 
     /**
      * Returns the list of Backups. Requires user login
-     * @param string $domain
      * @return string[]
      */
-    public function getAll($domain) {
-        $request = $this->adapter->query("/CMD_API_SITE_BACKUP", [ "domain" => $domain ]);
-        return $this->adapter->getListResult($request);
+    public function getAll(): array {
+        $response = $this->adapter->get("/CMD_API_SITE_BACKUP", [
+            "domain" => $this->adapter->getDomain(),
+        ]);
+        return $response->list;
     }
     
     
 
     /**
-     * Creates a new Backup for the given domain. Requires user login
-     * @param string $domain
-     * @return array|null
+     * Creates a new Backup. Requires user login
+     * @return Response
      */
-    public function create($domain) {
-        return $this->adapter->query("/CMD_API_SITE_BACKUP", [
+    public function create(): Response {
+        return $this->adapter->post("/CMD_API_SITE_BACKUP", [
             "action"          => "backup",
-            "domain"          => $domain,
+            "domain"          => $this->adapter->getDomain(),
             "select0"         => "domain",
             "select1"         => "subdomain",
             "select2"         => "email",
@@ -57,29 +58,28 @@ class Backup {
     }
     
     /**
-     * Restores the given Backup for the given domain. Requires user login
-     * @param string $domain
+     * Restores the given Backup. Requires user login
      * @param string $name
-     * @return array|null
+     * @return Response
      */
-    public function restore($domain, $name) {
-        $data = $this->adapter->query("/CMD_API_SITE_BACKUP", [
+    public function restore(string $name): Response {
+        $response = $this->adapter->get("/CMD_API_SITE_BACKUP", [
             "action" => "view",
-            "domain" => $domain,
+            "domain" => $this->adapter->getDomain(),
             "file"   => $name,
         ]);
-        
-        if (!empty($data["error"])) {
-            $fields = [
-                "action" => "restore",
-                "domain" => $domain,
-                "file"   => $name,
-            ];
-            foreach ($data as $index => $value) {
-                $fields["select$index"] = $value;
-            }
-            return $this->adapter->query("/CMD_API_SITE_BACKUP", $fields);
+        if ($response->hasError) {
+            return $response;
         }
-        return $data;
+
+        $fields = [
+            "action" => "restore",
+            "domain" => $domain,
+            "file"   => $name,
+        ];
+        foreach ($response->data as $index => $value) {
+            $fields["select$index"] = $value;
+        }
+        return $this->adapter->post("/CMD_API_SITE_BACKUP", $fields);
     }
 }

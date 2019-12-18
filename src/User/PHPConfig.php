@@ -2,6 +2,7 @@
 namespace DirectAdmin\User;
 
 use DirectAdmin\Adapter;
+use DirectAdmin\Response;
 
 /**
  * The User PHP Config
@@ -22,69 +23,62 @@ class PHPConfig {
 
     /**
      * Retrieves the PHP safe mode and open basedir config for the given domain
-     * @param string $domain
      * @return array
      */
-    public function getAll($domain) {
-        $request = $this->adapter->query("/CMD_API_PHP_SAFE_MODE");
-        $domain  = str_replace(".", "_", $domain);
-        $data    = [];
+    public function getAll(): array {
+        $response = $this->adapter->get("/CMD_API_PHP_SAFE_MODE");
+        $domain   = $this->adapter->getDomain();
+        $domain   = str_replace(".", "_", $domain);
+        $result   = [];
         
-        if (empty($request["error"])) {
-            if (!empty($request[$domain])) {
-                parse_str($request[$domain], $data);
-                return [
-                    "safeMode"    => $data["safemode"]     == "ON",
-                    "openBasedir" => $data["open_basedir"] == "ON",
-                ];
-            }
-            return [
-                "safeMode"    => false,
-                "openBasedir" => false,
+        $result = [
+            "safeMode"    => false,
+            "openBasedir" => false,
+        ];
+        if (!empty($response->data[$domain])) {
+            $result = [
+                "safeMode"    => $response->data["safemode"]     == "ON",
+                "openBasedir" => $response->data["open_basedir"] == "ON",
             ];
         }
-        return $request;
+        return $response;
     }
     
     
 
     /**
      * Activates/Deactivates PHP Safe Mode
-     * @param string  $domain
      * @param boolean $enable Optional.
-     * @return array|null
+     * @return Response
      */
-    public function setSafeMode($domain, $enable = true) {
+    public function setSafeMode(bool $enable = true): Response {
         $fields = [
             "action"  => "set",
-            "select0" => $domain,
+            "select0" => $this->adapter->getDomain(),
         ];
         if ($enable) {
             $fields["enable"] = 1;
         } else {
             $fields["disable"] = 1;
         }
-        
-        return $this->adapter->query("/CMD_API_PHP_SAFE_MODE", $fields);
+        return $this->adapter->post("/CMD_API_PHP_SAFE_MODE", $fields);
     }
     
     /**
      * Activates/Deactivates PHP Open Basedir
-     * @param string  $domain
      * @param boolean $enable Optional.
-     * @return array|null
+     * @return Response
      */
-    public function setOpenBasedir($domain, $enable = true) {
+    public function setOpenBasedir(bool $enable = true): Response {
         $fields = [
             "action"  => "set",
-            "select0" => $domain,
+            "select0" => $this->adapter->getDomain(),
         ];
         if ($enable) {
             $fields["enable_obd"] = 1;
         } else {
             $fields["disable_obd"] = 1;
         }
-        
-        return $this->adapter->query("/CMD_API_PHP_SAFE_MODE", $fields);
+        return $this->adapter->post("/CMD_API_PHP_SAFE_MODE", $fields);
     }
 }

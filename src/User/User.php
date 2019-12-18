@@ -2,6 +2,7 @@
 namespace DirectAdmin\User;
 
 use DirectAdmin\Adapter;
+use DirectAdmin\Response;
 
 /**
  * The User Accounts
@@ -21,50 +22,51 @@ class User {
     
 
     /**
-     * Returns the list of users for the current Reseller
+     * Returns the list of Users for the current Reseller
      * @return array
      */
-    public function getAll() {
-        return $this->adapter->query("/CMD_API_SHOW_USERS");
+    public function getAll(): array {
+        $response = $this->adapter->get("/CMD_API_SHOW_USERS");
+        return $response->data;
     }
 
     /**
-     * Returns the users limits and usage
-     * @param string $username
+     * Returns the Users limits and usage
+     * @param string $user
      * @param string $domain
      * @return array
      */
-    public function getInfo($username, $domain) {
+    public function getInfo(string $user, string $domain): array {
         $fields = [ "bandwidth", "quota", "domainptr", "mysql", "nemailf", "nemailr", "nemails", "nsubdomains", "ftp" ];
-        $usage  = $this->adapter->query("/CMD_API_SHOW_USER_USAGE",  [ "user" => $username ]);
+        $usage  = $this->adapter->get("/CMD_API_SHOW_USER_USAGE", [ "user" => $user ]);
         
-        if (!empty($usage["error"])) {
-            $usage  = $this->adapter->query("/CMD_API_SHOW_USER_USAGE",  [ "domain" => $domain ]);
-            $config = $this->adapter->query("/CMD_API_SHOW_USER_CONFIG", [ "domain" => $domain ]);
+        if ($usage->hasError) {
+            $usage  = $this->adapter->get("/CMD_API_SHOW_USER_USAGE",  [ "domain" => $domain ]);
+            $config = $this->adapter->get("/CMD_API_SHOW_USER_CONFIG", [ "domain" => $domain ]);
         } else {
-            $config = $this->adapter->query("/CMD_API_SHOW_USER_CONFIG", [ "user" => $username ]);
+            $config = $this->adapter->get("/CMD_API_SHOW_USER_CONFIG", [ "user" => $username ]);
         }
         $result = [];
         
-        if (!empty($usage) && !empty($config) && empty($usage["error"]) && empty($config["error"])) {
+        if (!$usage->hasError && !$config->hasError) {
             foreach ($fields as $field) {
-                if (isset($usage[$field]) && isset($config[$field])) {
+                if (isset($usage->data[$field]) && isset($config->data[$field])) {
                     $result[$field] = [
-                        "used"   => (int)$usage[$field],
-                        "total"  => $config[$field] == "unlimited" ? -1 : (int)$config[$field],
-                        "canAdd" => $config[$field] == "unlimited" || (int)$usage[$field] < (int)$config[$field],
+                        "used"   => (int)$usage->data[$field],
+                        "total"  => $config->data[$field] == "unlimited" ? -1 : (int)$config->data[$field],
+                        "canAdd" => $config->data[$field] == "unlimited" || (int)$usage->data[$field] < (int)$config->data[$field],
                     ];
                 }
             }
             
             if (!empty($result)) {
-                $result["dbQuota"]    = [ "used" => isset($usage["db_quota"])    ? (int)$usage["db_quota"]    : 0 ];
-                $result["emailQuota"] = [ "used" => isset($usage["email_quota"]) ? (int)$usage["email_quota"] : 0 ];
+                $result["dbQuota"]    = [ "used" => isset($usage->data["db_quota"])    ? (int)$usage->data["db_quota"]    : 0 ];
+                $result["emailQuota"] = [ "used" => isset($usage->data["email_quota"]) ? (int)$usage->data["email_quota"] : 0 ];
 
                 $result["dbQuota"]["used"]    = floor(($result["dbQuota"]["used"]    / (1024 * 1024)) * 100) / 100;
                 $result["emailQuota"]["used"] = floor(($result["emailQuota"]["used"] / (1024 * 1024)) * 100) / 100;
 
-                $result["bandwidth"]["additional"] = !empty($config["additional_bandwidth"]) ? (int)$config["additional_bandwidth"] : 0;
+                $result["bandwidth"]["additional"] = !empty($config->data["additional_bandwidth"]) ? (int)$config->data["additional_bandwidth"] : 0;
             }
         }
         
@@ -73,38 +75,25 @@ class User {
     
     /**
      * Returns the users configuration
-     * @param string $username
+     * @param string $user
      * @return array
      */
-    public function getConfig($username) {
-        return $this->adapter->query("/CMD_API_SHOW_USER_CONFIG", [ "user" => $username ]);
+    public function getConfig(string $user) {
+        $response = $this->adapter->get("/CMD_API_SHOW_USER_CONFIG", [ "user" => $user ]);
+        return $response->data;
     }
     
     /**
      * Returns the main domain for the given user
-     * @param string $username
+     * @param string $user
      * @return string
      */
-    public function getMainDomain($username) {
-        $result = $this->adapter->query("/CMD_API_SHOW_USER_DOMAINS", [ "user" => $username ]);
-        foreach (array_keys($result) as $key) {
+    public function getMainDomain(string $user): string {
+        $response = $this->adapter->get("/CMD_API_SHOW_USER_DOMAINS", [ "user" => $user ]);
+        foreach ($response->keys as $key) {
             return str_replace("_", ".", $key);
         }
-    }
-
-    /**
-     * Returns the contents of the log File. Requires user login
-     * @param string  $domain
-     * @param string  $type   Optional.
-     * @param integer $lines  Optional.
-     * @return string
-     */
-    public function getLog($domain, $type = "error", $lines = 10) {
-        return $this->adapter->query("/CMD_SHOW_LOG", [
-            "domain" => $domain,
-            "type"   => $type,
-            "lines"  => $lines,
-        ], "GET", false);
+        return "";
     }
 
 
@@ -112,10 +101,10 @@ class User {
     /**
      * Creates a new User
      * @param array $data
-     * @return array
+     * @return Response
      */
-    public function create(array $data) {
-        return $this->adapter->query("/CMD_API_ACCOUNT_USER", [
+    public function create(array $data): Response {
+        return $this->adapter->post("/CMD_API_ACCOUNT_USER", [
             "action"   => "create",
             "add"      => "Submit",
             "username" => $data["username"],
@@ -130,143 +119,145 @@ class User {
     }
     
     /**
-     * Deletes the given User Account
-     * @param string $username
-     * @return array
+     * Deletes the given User
+     * @param string $user
+     * @return Response
      */
-    public function delete($username) {
-        return $this->adapter->query("/CMD_API_SELECT_USERS", [
+    public function delete(string $user): Response {
+        return $this->adapter->post("/CMD_API_SELECT_USERS", [
             "confirmed" => "Confirm",
             "delete"    => "yes",
-            "select0"   => $username,
-        ], "POST");
+            "select0"   => $user,
+        ]);
     }
     
     
 
     /**
      * Suspends or Unsuspends the given User Account
-     * @param string|string[] $username
-     * @param boolean         $suspend  Optional.
-     * @return array|null
+     * @param string|string[] $user
+     * @param boolean         $suspend Optional.
+     * @return Response
      */
-    public function suspend($username, $suspend = true) {
-        $usernames = is_array($username) ? $username : [ $username ];
-        $fields    = $suspend ? [ "dosuspend" => "Suspend" ] : [ "dounsuspend" => "Unsuspend" ];
+    public function suspend($user, bool $suspend = true): Response {
+        $users  = is_array($user) ? $user : [ $user ];
+        $fields = $suspend ? [ "dosuspend" => "Suspend" ] : [ "dounsuspend" => "Unsuspend" ];
         
-        foreach ($usernames as $index => $value) {
+        foreach ($users as $index => $value) {
             $fields["select$index"] = $value;
         }
-        return $this->adapter->query("/CMD_API_SELECT_USERS", $fields, "POST");
+        return $this->adapter->post("/CMD_API_SELECT_USERS", $fields);
     }
     
     /**
      * Moves the user from the current reseller to a new one
-     * @param string $username
+     * @param string $user
      * @param string $reseller
-     * @return array|null
+     * @return Response
      */
-    public function changeReseller($username, $reseller) {
-        return $this->adapter->query("/CMD_API_MOVE_USERS", [
+    public function changeReseller(string $user, string $reseller): Response {
+        return $this->adapter->post("/CMD_API_MOVE_USERS", [
             "action"  => "moveusers",
-            "select1" => $username,
+            "select1" => $user,
             "creator" => $reseller,
         ]);
     }
     
     /**
      * Changes the User's Email
-     * @param string $username
+     * @param string $user
      * @param string $email
-     * @return array|null
+     * @return Response
      */
-    public function changeEmail($username, $email) {
-        return $this->adapter->query("/CMD_API_MODIFY_USER", [
+    public function changeEmail(string $user, string $email): Response {
+        return $this->adapter->post("/CMD_API_MODIFY_USER", [
             "action" => "single",
             "email"  => "Save",
-            "user"   => $username,
+            "user"   => $user,
             "evalue" => $email,
-        ], "POST");
+        ]);
     }
     
     /**
      * Changes the User's Username
-     * @param string $username
-     * @param string $newname
-     * @return array|null
+     * @param string $user
+     * @param string $newName
+     * @return Response
      */
-    public function changeUsername($username, $newname) {
-        return $this->adapter->query("/CMD_API_MODIFY_USER", [
+    public function changeUsername(string $user, string $newName): Response {
+        return $this->adapter->post("/CMD_API_MODIFY_USER", [
             "action" => "single",
             "name"   => "Save",
-            "user"   => $username,
-            "nvalue" => $newname,
-        ], "POST");
+            "user"   => $user,
+            "nvalue" => $newName,
+        ]);
     }
     
     /**
      * Changes the User's Package
-     * @param string $username
+     * @param string $user
      * @param string $package
-     * @return array|null
+     * @return Response
      */
-    public function changePackage($username, $package) {
-        return $this->adapter->query("/CMD_API_MODIFY_USER", [
+    public function changePackage(string $user, string $package): Response {
+        return $this->adapter->post("/CMD_API_MODIFY_USER", [
             "action"  => "package",
-            "user"    => $username,
+            "user"    => $user,
             "package" => $package,
-        ], "POST");
+        ]);
     }
     
     /**
-     * Changes the Old Domain to the new Domain. Requires user login
+     * Changes the old Domain to the new Domain. Requires user login
      * @param string $oldDomain
      * @param string $newDomain
-     * @return array|null
+     * @return Response
      */
-    public function changeDomain($oldDomain, $newDomain) {
-        return $this->adapter->query("/CMD_API_CHANGE_DOMAIN", [
+    public function changeDomain(string $oldDomain, string $newDomain): Response {
+        return $this->adapter->post("/CMD_API_CHANGE_DOMAIN", [
             "old_domain" => $oldDomain,
             "new_domain" => $newDomain,
-        ], "POST");
+        ]);
     }
     
     /**
-     * Resets the given user's password
-     * @param string $username
+     * Resets the given User's Password
+     * @param string $user
      * @param string $password
-     * @return array|null
+     * @return Response
      */
-    public function changePassword($username, $password) {
-        return $this->adapter->query("/CMD_API_USER_PASSWD", [
-            "username" => $username,
+    public function changePassword(string $user, string $password): Response {
+        return $this->adapter->post("/CMD_API_USER_PASSWD", [
+            "username" => $user,
             "passwd"   => $password,
             "passwd2"  => $password,
-        ], "POST");
+        ]);
     }
     
     /**
-     * Sets the additional bandwidth for the given user
-     * @param string  $username
+     * Sets the User's Additional Bandwidth
+     * @param string  $user
      * @param integer $amount
-     * @return array|null
+     * @return Response
      */
-    public function addBandwidth($username, $amount) {
-        return $this->adapter->query("/CMD_API_MODIFY_USER", [
+    public function addBandwidth(string $user, int $amount): Response {
+        return $this->adapter->post("/CMD_API_MODIFY_USER", [
+            "user"                 => $user,
             "additional_bandwidth" => $amount,
             "additional_bw"        => "add",
             "action"               => "single",
-            "user"                 => $username,
-        ], "POST");
+        ]);
     }
+
+
     
     /**
-     * Sets the pulic stats. Requires user login
-     * @param string $domain
-     * @return array|null
+     * Sets the Public Stats. Requires user login
+     * @return Response
      */
-    public function setPublicStats($domain) {
-        return $this->adapter->query("/CMD_API_PUBLIC_STATS", [
+    public function setPublicStats(): Response {
+        $domain = $this->adapter->getDomain();
+        return $this->adapter->post("/CMD_API_PUBLIC_STATS", [
             "action"  => "public",
             "path"    => "awstats",
             "domain"  => $domain,
@@ -274,29 +265,53 @@ class User {
         ]);
     }
     
-    
+    /**
+     * Returns the contents of the Error Log File. Requires user login
+     * @param integer $lines Optional.
+     * @return string
+     */
+    public function getErrorLog(int $lines = 10) {
+        $response = $this->adapter->get("/CMD_SHOW_LOG", [
+            "domain" => $this->adapter->getDomain(),
+            "type"   => "error",
+            "lines"  => $lines,
+        ]);
+        return $response->raw;
+    }
 
     /**
-     * Returns the spam configuration. Requires user login
-     * @param string $domain
-     * @return array|null
+     * Returns the contents of the Access Log File. Requires user login
+     * @param integer $lines Optional.
+     * @return string
      */
-    public function getSpamConfig($domain) {
-        return $this->adapter->query("/CMD_API_SPAMASSASSIN", [
-            "domain" => $domain,
+    public function getAccessLog(int $lines = 10) {
+        $response = $this->adapter->get("/CMD_SHOW_LOG", [
+            "domain" => $this->adapter->getDomain(),
+            "type"   => "access",
+            "lines"  => $lines,
+        ]);
+        return $response->raw;
+    }
+
+    /**
+     * Returns the Spam Configuration. Requires user login
+     * @return Response
+     */
+    public function getSpamConfig(): Response {
+        return $this->adapter->post("/CMD_API_SPAMASSASSIN", [
+            "domain" => $this->adapter->getDomain(),
         ]);
     }
     
     /**
-     * Sets the spam configuration. Requires user login
-     * @param string $domain
-     * @param array  $data
-     * @return array|null
+     * Sets the Spam Configuration. Requires user login
+     * @param array $data
+     * @return Response
      */
-    public function setSpamConfig($domain, array $data) {
-        return $this->adapter->query("/CMD_API_SPAMASSASSIN", [
+    public function setSpamConfig(array $data): Response {
+        return $this->adapter->post("/CMD_API_SPAMASSASSIN", [
             "action" => "save",
-            "domain" => $domain,
+            "domain" => $this->adapter->getDomain(),
             "is_on"  => "yes",
         ] + $data);
     }

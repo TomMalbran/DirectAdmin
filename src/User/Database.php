@@ -2,6 +2,7 @@
 namespace DirectAdmin\User;
 
 use DirectAdmin\Adapter;
+use DirectAdmin\Response;
 
 /**
  * The User Databases
@@ -21,39 +22,37 @@ class Database {
     
     
     /**
-     * Returns a list of Databases for the user. Requires user login
+     * Returns a list of Databases. Requires user login
      * @return string[]
      */
-    public function getAll() {
-        $request = $this->adapter->query("/CMD_API_DATABASES");
-        return (!empty($request) && empty($request["error"]) && !empty($request["list"])) ? $request["list"] : [];
+    public function getAll(): array {
+        $response = $this->adapter->get("/CMD_API_DATABASES");
+        return $response->list;
     }
     
     /**
-     * Returns a list of Databases for the user. Requires user login
+     * Returns a list of Databases with Users. Requires user login
      * @return array
      */
-    public function getWithUsers() {
-        $request = $this->adapter->query("/CMD_API_DATABASES");
-        $result  = [
+    public function getWithUsers(): array {
+        $response = $this->adapter->get("/CMD_API_DATABASES");
+        $result   = [
             "data"  => [],
             "names" => [],
             "users" => [],
         ];
         
-        if (!empty($request) && empty($request["error"]) && !empty($request["list"])) {
-            foreach ($request["list"] as $index => $name) {
-                $users = $this->adapter->query("/CMD_API_DB_USER", [ "name" => $name ]);
-                array_shift($users["list"]);
-                
-                $result["data"][$index] = [
-                    "index" => $index,
-                    "name"  => $name,
-                    "users" => $users["list"],
-                ];
-                $result["names"][] = $name;
-                $result["users"]   = array_merge($result["users"], $users["list"]);
-            }
+        foreach ($response->list as $index => $name) {
+            $users = $this->adapter->get("/CMD_API_DB_USER", [ "name" => $name ]);
+            array_shift($users->list);
+            
+            $result["data"][$index] = [
+                "index" => $index,
+                "name"  => $name,
+                "users" => $users->list,
+            ];
+            $result["names"][] = $name;
+            $result["users"]   = array_merge($result["users"], $users->list);
         }
         return $result;
     }
@@ -65,10 +64,10 @@ class Database {
      * @param string $name
      * @param string $user
      * @param string $password
-     * @return array|null
+     * @return Response
      */
-    public function create($name, $user, $password) {
-        return $this->adapter->query("/CMD_API_DATABASES", [
+    public function create(string $name, string $user, string $password): Response {
+        return $this->adapter->post("/CMD_API_DATABASES", [
             "action"  => "create",
             "name"    => $name,
             "user"    => $user,
@@ -80,10 +79,10 @@ class Database {
     /**
      * Deletes the Database with the given name. Requires user login
      * @param string $name
-     * @return array|null
+     * @return Response
      */
-    public function delete($name) {
-        return $this->adapter->query("/CMD_API_DATABASES", [
+    public function delete(string $name): Response {
+        return $this->adapter->post("/CMD_API_DATABASES", [
             "action"  => "delete",
             "select0" => $name,
         ]);
@@ -96,10 +95,10 @@ class Database {
      * @param string $name
      * @param string $user
      * @param string $password
-     * @return array|null
+     * @return Response
      */
-    public function createUser($name, $user, $password) {
-        return $this->adapter->query("/CMD_API_DB_USER", [
+    public function createUser(string $name, string $user, string $password): Response {
+        return $this->adapter->post("/CMD_API_DB_USER", [
             "action"  => "create",
             "name"    => $name,
             "user"    => $user,
@@ -113,10 +112,10 @@ class Database {
      * @param string $name
      * @param string $user
      * @param string $password
-     * @return array|null
+     * @return Response
      */
-    public function editUser($name, $user, $password) {
-        return $this->adapter->query("/CMD_API_DB_USER", [
+    public function editUser(string $name, string $user, string $password): Response {
+        return $this->adapter->post("/CMD_API_DB_USER", [
             "action"  => "modify",
             "name"    => $name,
             "user"    => $user,
@@ -129,10 +128,10 @@ class Database {
      * Deletes the given Database User. Requires user login
      * @param string $name
      * @param string $user
-     * @return array|null
+     * @return Response
      */
-    public function deleteUser($name, $user) {
-        return $this->adapter->query("/CMD_API_DB_USER", [
+    public function deleteUser(string $name, string $user): Response {
+        return $this->adapter->post("/CMD_API_DB_USER", [
             "action"  => "delete",
             "name"    => $name,
             "select0" => $user,
@@ -145,10 +144,10 @@ class Database {
      * Creates a new Access Host. Requires user login
      * @param string $db
      * @param string $host
-     * @return array|null
+     * @return Response
      */
-    public function createHost($db, $host) {
-        return $this->adapter->query("/CMD_API_DATABASES", [
+    public function createHost(string $db, string $host): Response {
+        return $this->adapter->post("/CMD_API_DATABASES", [
             "action" => "accesshosts",
             "create" => "yes",
             "db"     => $db,
@@ -157,13 +156,13 @@ class Database {
     }
     
     /**
-     * Creates a new Access Host. Requires user login
+     * Deletes an Access Host. Requires user login
      * @param string $db
      * @param string $host
-     * @return array|null
+     * @return Response
      */
-    public function deleteHost($db, $host) {
-        return $this->adapter->query("/CMD_API_DATABASES", [
+    public function deleteHost(string $db, string $host): Response {
+        return $this->adapter->post("/CMD_API_DATABASES", [
             "action"  => "accesshosts",
             "delete"  => "yes",
             "db"      => $db,
