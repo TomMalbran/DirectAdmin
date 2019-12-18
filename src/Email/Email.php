@@ -26,19 +26,21 @@ class Email {
      * @return array
      */
     public function getAll(): array {
+        $domain   = $this->adapter->getDomain();
         $response = $this->adapter->get("/CMD_API_POP", [
             "action" => "full_list",
-            "domain" => $this->adapter->getDomain(),
-        ], true);
+            "domain" => $domain,
+        ]);
         
         $result = [];
         $index  = 0;
         foreach ($response->data as $user => $data) {
             $result[] = [
                 "index"       => $index,
-                "user"        => str_replace("___", ".", $user),
-                "quota"       => !empty($data["quota"]) ? str_replace("___", ".", $data["quota"]) : 0,
-                "usage"       => !empty($data["usage"]) ? str_replace("___", ".", $data["usage"]) : 0,
+                "user"        => $user,
+                "email"       => "$user@$domain",
+                "quota"       => !empty($data["quota"]) ? (float)$data["quota"] : 0,
+                "usage"       => !empty($data["usage"]) ? (float)$data["usage"] : 0,
                 "isSuspended" => !empty($data["suspended"]) ? $data["suspended"] == "yes" : false,
             ];
             $index += 1;
