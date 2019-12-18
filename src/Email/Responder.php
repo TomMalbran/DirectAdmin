@@ -26,14 +26,14 @@ class Responder {
      * @return array
      */
     public function getAll(): array {
-        $index    = 0;
-        $result   = [ "data" => [], "list" => [] ];
-        $response = $this->adapter->query("/CMD_API_EMAIL_AUTORESPONDER", [
+        $response = $this->adapter->get("/CMD_API_EMAIL_AUTORESPONDER", [
             "domain" => $this->adapter->getDomain(),
         ]);
-        
+
+        $result = [ "data" => [], "list" => [] ];
+        $index  = 0;
         foreach ($response->data as $user => $cc) {
-            $data = $this->adapter->query("/CMD_API_EMAIL_AUTORESPONDER_MODIFY", [
+            $data = $this->adapter->get("/CMD_API_EMAIL_AUTORESPONDER_MODIFY", [
                 "domain" => $this->adapter->getDomain(),
                 "user"   => $user,
             ]);
@@ -42,7 +42,7 @@ class Responder {
                 "index" => $index,
                 "user"  => $user,
                 "cc"    => $cc,
-                "text"  => $data["text"],
+                "text"  => $data->data["text"],
             ];
             $result["list"][] = $user;
             $index += 1;
@@ -59,10 +59,9 @@ class Responder {
      * @param string $cc   Optional.
      * @return Response
      */
-    public function create(string $user, string $text, string $cc = null): Response {
-        $fields = $this->getFields($user, $text, $cc);
-        $fields["action"] = "create";
-        return $this->adapter->query("/CMD_API_EMAIL_AUTORESPONDER", $fields);
+    public function create(string $user, string $text, string $cc = ""): Response {
+        $fields = $this->createFields("create", $user, $text, $cc);
+        return $this->adapter->post("/CMD_API_EMAIL_AUTORESPONDER", $fields);
     }
     
     /**
@@ -72,21 +71,22 @@ class Responder {
      * @param string $cc   Optional.
      * @return Response
      */
-    public function edit(string $user, string $text, string $cc = null): Response {
-        $fields = $this->getFields($domain, $user, $text, $cc);
-        $fields["action"] = "modify";
-        return $this->adapter->query("/CMD_API_EMAIL_AUTORESPONDER", $fields);
+    public function edit(string $user, string $text, string $cc = ""): Response {
+        $fields = $this->createFields("modify", $user, $text, $cc);
+        return $this->adapter->post("/CMD_API_EMAIL_AUTORESPONDER", $fields);
     }
     
     /**
      * Returns the fields to create or edit an Email Autoresponder
+     * @param string $action
      * @param string $user
      * @param string $text
-     * @param string $cc   Optional.
+     * @param string $cc     Optional.
      * @return array
      */
-    private function getFields(string $user, string $text, string $cc = null): array {
+    private function createFields(string $action, string $user, string $text, string $cc = ""): array {
         $fields = [
+            "action" => $action,
             "domain" => $this->adapter->getDomain(),
             "user"   => $user,
             "text"   => $text,
@@ -108,7 +108,7 @@ class Responder {
      * @return Response
      */
     public function delete(string $user): Response {
-        return $this->adapter->query("/CMD_API_EMAIL_AUTORESPONDER", [
+        return $this->adapter->post("/CMD_API_EMAIL_AUTORESPONDER", [
             "action"  => "delete",
             "domain"  => $this->adapter->getDomain(),
             "select0" => $user,

@@ -26,14 +26,14 @@ class Vacation {
      * @return array
      */
     public function getAll(): array {
-        $index    = 0;
-        $result   = [ "data" => [], "list" => [] ];
-        $response = $this->adapter->query("/CMD_API_EMAIL_VACATION", [
+        $response = $this->adapter->get("/CMD_API_EMAIL_VACATION", [
             "domain" => $this->adapter->getDomain(),
         ]);
-        
+            
+        $result = [ "data" => [], "list" => [] ];
+        $index  = 0;
         foreach ($response->keys as $user) {
-            $data = $this->adapter->query("/CMD_API_EMAIL_VACATION_MODIFY", [
+            $data = $this->adapter->get("/CMD_API_EMAIL_VACATION_MODIFY", [
                 "domain" => $this->adapter->getDomain(),
                 "user"   => $user,
             ]);
@@ -41,7 +41,7 @@ class Vacation {
             $result["data"][$index] = [
                 "index" => $index,
                 "user"  => $user,
-            ] + $data;
+            ] + $data->data;
             $result["list"][] = $user;
             $index += 1;
         }
@@ -60,9 +60,8 @@ class Vacation {
      * @return Response
      */
     public function create(string $user, string $text, int $fromTime, int $toTime, bool $isEdit): Response {
-        $fields = $this->getFields($user, $text, $fromTime, $toTime);
-        $fields["action"] = "create";
-        return $this->adapter->query("/CMD_API_EMAIL_VACATION", $fields);
+        $fields = $this->createFields("create", $user, $text, $fromTime, $toTime);
+        return $this->adapter->post("/CMD_API_EMAIL_VACATION", $fields);
     }
     
     /**
@@ -75,21 +74,22 @@ class Vacation {
      * @return Response
      */
     public function edit(string $user, string $text, int $fromTime, int $toTime, bool $isEdit): Response {
-        $fields = $this->getFields($user, $text, $fromTime, $toTime);
-        $fields["action"] = "modify";
-        return $this->adapter->query("/CMD_API_EMAIL_VACATION", $fields);
+        $fields = $this->getFields("modify", $user, $text, $fromTime, $toTime);
+        return $this->adapter->post("/CMD_API_EMAIL_VACATION", $fields);
     }
     
     /**
      * Returns the fields to create or edit an Email Vacations Message
+     * @param string  $action
      * @param string  $user
      * @param string  $text
      * @param integer $fromTime
      * @param integer $toTime
      * @return array
      */
-    private function getFields(string $user, string $text, int $fromTime, int $toTime): array {
+    private function getFields(string $action, string $user, string $text, int $fromTime, int $toTime): array {
         return [
+            "action"     => $action,
             "domain"     => $this->adapter->getDomain(),
             "user"       => $user,
             "text"       => $text,
@@ -112,7 +112,7 @@ class Vacation {
      * @return Response
      */
     public function delete(string $user): Response {
-        return $this->adapter->query("/CMD_API_EMAIL_VACATION", [
+        return $this->adapter->post("/CMD_API_EMAIL_VACATION", [
             "action"  => "delete",
             "domain"  => $this->adapter->getDomain(),
             "select0" => $user,

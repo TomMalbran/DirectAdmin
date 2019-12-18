@@ -26,12 +26,12 @@ class Forwarder {
      * @return array
      */
     public function getAll(): array {
-        $index    = 0;
-        $result   = [ "data" => [], "list" => [] ];
-        $response = $this->adapter->query("/CMD_API_EMAIL_FORWARDERS", [
+        $response = $this->adapter->get("/CMD_API_EMAIL_FORWARDERS", [
             "domain" => $this->adapter->getDomain(),
         ]);
-        
+            
+        $result = [ "data" => [], "list" => [] ];
+        $index  = 0;
         foreach ($response->data as $user => $dest) {
             $result["data"][$index] = [
                 "index" => $index,
@@ -54,7 +54,7 @@ class Forwarder {
      * @return Response
      */
     public function create(string $user, string $email): Response {
-        return $this->adapter->query("/CMD_API_EMAIL_FORWARDERS", [
+        return $this->adapter->post("/CMD_API_EMAIL_FORWARDERS", [
             "action" => "create",
             "domain" => $this->adapter->getDomain(),
             "user"   => $user,
@@ -69,7 +69,7 @@ class Forwarder {
      * @return Response
      */
     public function edit(string $user, string $email): Response {
-        return $this->adapter->query("/CMD_API_EMAIL_FORWARDERS", [
+        return $this->adapter->post("/CMD_API_EMAIL_FORWARDERS", [
             "action" => "modify",
             "domain" => $this->adapter->getDomain(),
             "user"   => $user,
@@ -83,7 +83,7 @@ class Forwarder {
      * @return Response
      */
     public function delete(string $user): Response {
-        return $this->adapter->query("/CMD_API_EMAIL_FORWARDERS", [
+        return $this->adapter->post("/CMD_API_EMAIL_FORWARDERS", [
             "action"  => "delete",
             "domain"  => $this->adapter->getDomain(),
             "select0" => $user,

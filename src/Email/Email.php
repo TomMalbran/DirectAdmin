@@ -26,16 +26,15 @@ class Email {
      * @return array
      */
     public function getAll(): array {
-        $index    = 0;
-        $result   = [];
-        $response = $this->adapter->query("/CMD_API_POP", [
+        $response = $this->adapter->get("/CMD_API_POP", [
             "action" => "full_list",
             "domain" => $this->adapter->getDomain(),
-        ], "GET", true, true);
+        ], true);
         
+        $result = [];
+        $index  = 0;
         foreach ($response->data as $user => $data) {
-            parse_str($data, $data);
-            $result[$index] = [
+            $result[] = [
                 "index"       => $index,
                 "user"        => str_replace("___", ".", $user),
                 "quota"       => !empty($data["quota"]) ? str_replace("___", ".", $data["quota"]) : 0,
@@ -52,7 +51,7 @@ class Email {
      * @return string[]
      */
     public function getUsers(): array {
-        $response = $this->adapter->query("/CMD_API_POP", [
+        $response = $this->adapter->get("/CMD_API_POP", [
             "action" => "list",
             "domain" => $this->adapter->getDomain(),
         ]);
@@ -65,7 +64,7 @@ class Email {
      * @return Response
      */
     public function getQuota(string $user): Response {
-        return $this->adapter->query("/CMD_API_POP", [
+        return $this->adapter->get("/CMD_API_POP", [
             "type"   => "quota",
             "domain" => $this->adapter->getDomain(),
             "user"   => $user,
@@ -82,9 +81,10 @@ class Email {
      * @return Response
      */
     public function create(string $user, string $password = "", int $quota = 0): Response {
-        $fields = $this->getFields($user, $password, $quota);
-        $fields["action"] = "create";
-        return $this->adapter->query("/CMD_API_POP", $fields);
+        $fields = $this->createFields([
+            "action" => "create",
+        ], $user, $password, $quota);
+        return $this->adapter->post("/CMD_API_POP", $fields);
     }
     
     /**
@@ -96,21 +96,23 @@ class Email {
      * @return Response
      */
     public function edit(string $user, string $newuser, string $password = "", int $quota = 0): Response {
-        $fields = $this->getFields($user, $password, $quota);
-        $fields["action"]  = "modify";
-        $fields["newuser"] = $newuser;
-        return $this->adapter->query("/CMD_API_POP", $fields);
+        $fields = $this->createFields([
+            "action"  => "modify",
+            "newuser" => $newuser,
+        ], $user, $password, $quota);
+        return $this->adapter->post("/CMD_API_POP", $fields);
     }
     
     /**
      * Returns the fields to create or edit an Email Account
+     * @param array   $fields
      * @param string  $user
      * @param string  $password
      * @param integer $quota
      * @return array
      */
-    private function getfields(string $user, string $password, int $quota): array {
-        $fields = [
+    private function createFields(array $fields, string $user, string $password, int $quota): array {
+        $fields += [
             "domain" => $this->adapter->getDomain(),
             "user"   => $user,
             "quota"  => $quota,
@@ -134,8 +136,8 @@ class Email {
     public function getOutlook(string $user): string {
         $domain   = $this->adapter->getDomain();
         $email    = "$user@$domain";
-        $response = $this->adapter->query("/CMD_EMAIL_REG/$domain/$email/$email/outlook_$user.reg", [], "GET", false);
-        return $response->data;
+        $response = $this->adapter->get("/CMD_EMAIL_REG/$domain/$email/$email/outlook_$user.reg");
+        return $response->raw;
     }
     
     /**
@@ -144,7 +146,7 @@ class Email {
      * @return Response
      */
     public function suspend(string $user): Response {
-        return $this->adapter->query("/CMD_API_POP", [
+        return $this->adapter->post("/CMD_API_POP", [
             "suspend" => "Suspend",
             "action"  => "delete",
             "domain"  => $this->adapter->getDomain(),
@@ -158,7 +160,7 @@ class Email {
      * @return Response
      */
     public function unsuspend(string $user): Response {
-        return $this->adapter->query("/CMD_API_POP", [
+        return $this->adapter->post("/CMD_API_POP", [
             "unsuspend" => "Unsuspend",
             "action"    => "delete",
             "domain"    => $this->adapter->getDomain(),
@@ -174,7 +176,7 @@ class Email {
      * @return Response
      */
     public function delete(string $user): Response {
-        return $this->adapter->query("/CMD_API_POP", [
+        return $this->adapter->post("/CMD_API_POP", [
             "action"           => "delete",
             "clean_forwarders" => "yes",
             "domain"           => $this->adapter->getDomain(),
@@ -184,12 +186,12 @@ class Email {
     
     /**
      * Purges the Emails from the given domain. Requires user login
-     * @param string[] $users
-     * @param string   $file
-     * @param string   $what
+     * @param string[]|string $user
+     * @param string          $file
+     * @param string          $what
      * @return Response
      */
-    public function purge(array $users, string $file, string $what): Response {
+    public function purge($user, string $file, string $what): Response {
         $fields = [
             "action" => "delete",
             "purge"  => "Purge From",
@@ -197,10 +199,11 @@ class Email {
             "file"   => $file,
             "what"   => $what,
         ];
+        $users = is_array($user) ? $user : [ $user ];
         foreach ($users as $index => $value) {
             $fields["select$index"] = $value;
         }
-        return $this->adapter->query("/CMD_EMAIL_POP", $fields);
+        return $this->adapter->post("/CMD_EMAIL_POP", $fields);
     }
     
     
@@ -211,7 +214,7 @@ class Email {
      * @return Response
      */
     public function toggleMXDNS(bool $disable): Response {
-        return $this->adapter->query("/CMD_API_DNS_MX", [
+        return $this->adapter->post("/CMD_API_DNS_MX", [
             "action"   => "internal",
             "domain"   => $this->adapter->getDomain(),
             "internal" => $disable ? "no" : "yes",
