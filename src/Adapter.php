@@ -49,14 +49,34 @@ class Adapter {
     
 
     /**
-     * Does a query over the server
+     * Does a get query to the server
+     * @param string $endPoint
+     * @param array  $params   Optional.
+     * @return Response
+     */
+    public function get(string $endPoint, array $params = []): Response {
+        return $this->query($endPoint, $params, "GET");
+    }
+
+    /**
+     * Does a post query to the server
+     * @param string $endPoint
+     * @param array  $params
+     * @return Response
+     */
+    public function post(string $endPoint, array $params): Response {
+        return $this->query($endPoint, $params, "POST");
+    }
+
+    /**
+     * Does a query to the server
      * @param string  $endPoint
-     * @param array   $params   Optional.
-     * @param string  $method   Optional.
+     * @param array   $params
+     * @param string  $method
      * @param boolean $withDots Optional.
      * @return Response
      */
-    public function query(string $endPoint, array $params = [], string $method = "GET", bool $withDots = false): Response {
+    private function query(string $endPoint, array $params, string $method, bool $withDots = false): Response {
         $user    = !empty($this->user) ? "{$this->username}|{$this->user}" : $this->username;
         $request = "https://{$this->host}:{$this->port}{$endPoint}";
 
