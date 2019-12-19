@@ -6,17 +6,18 @@ namespace DirectAdmin;
  */
 class DirectAdmin {
     
-    private $adapter;
+    private $context;
     
     public $service;
     public $loginKey;
     public $mailQueue;
     
     public $reseller;
+    public $user;
     public $package;
     public $transfer;
 
-    public $user;
+    public $account;
     public $backup;
     public $database;
     public $ftpAccount;
@@ -41,37 +42,36 @@ class DirectAdmin {
      * @param integer $port
      * @param string  $username
      * @param string  $password
-     * @param string  $user     Optional.
-     * @param string  $domain   Optional.
      */
-    public function __construct(string $host, int $port, string $username, string $password, string $user = "", string $domain = "") {
-        $this->adapter    = new Adapter($host, $port, $username, $password, $user, $domain);
+    public function __construct(string $host, int $port, string $username, string $password) {
+        $this->context    = new Context($host, $port, $username, $password);
         
-        $this->service    = new Admin\Service($this->adapter);
-        $this->loginKey   = new Admin\LoginKey($this->adapter);
-        $this->mailQueue  = new Admin\MailQueue($this->adapter);
+        $this->service    = new Admin\Service($this->context);
+        $this->loginKey   = new Admin\LoginKey($this->context);
+        $this->mailQueue  = new Admin\MailQueue($this->context);
         
-        $this->reseller   = new Reseller\Reseller($this->adapter);
-        $this->package    = new Reseller\Package($this->adapter);
-        $this->transfer   = new Reseller\Transfer($this->adapter);
+        $this->reseller   = new Reseller\Reseller($this->context);
+        $this->user       = new Reseller\User($this->context);
+        $this->package    = new Reseller\Package($this->context);
+        $this->transfer   = new Reseller\Transfer($this->context);
         
-        $this->user       = new User\User($this->adapter);
-        $this->backup     = new User\Backup($this->adapter);
-        $this->database   = new User\Database($this->adapter);
-        $this->ftpAccount = new User\FTPAccount($this->adapter);
-        $this->phpConfig  = new User\PHPConfig($this->adapter);
+        $this->account    = new User\Account($this->context);
+        $this->backup     = new User\Backup($this->context);
+        $this->database   = new User\Database($this->context);
+        $this->ftpAccount = new User\FTPAccount($this->context);
+        $this->phpConfig  = new User\PHPConfig($this->context);
         
-        $this->domainPtr  = new Domain\DomainPtr($this->adapter);
-        $this->subdomain  = new Domain\Subdomain($this->adapter);
-        $this->redirect   = new Domain\Redirect($this->adapter);
+        $this->domainPtr  = new Domain\DomainPtr($this->context);
+        $this->subdomain  = new Domain\Subdomain($this->context);
+        $this->redirect   = new Domain\Redirect($this->context);
 
-        $this->email      = new Email\Email($this->adapter);
-        $this->forwarder  = new Email\Forwarder($this->adapter);
-        $this->responder  = new Email\Responder($this->adapter);
-        $this->vacation   = new Email\Vacation($this->adapter);
+        $this->email      = new Email\Email($this->context);
+        $this->forwarder  = new Email\Forwarder($this->context);
+        $this->responder  = new Email\Responder($this->context);
+        $this->vacation   = new Email\Vacation($this->context);
         
-        $this->directory  = new File\Directory($this->adapter);
-        $this->file       = new File\File($this->adapter);
+        $this->directory  = new File\Directory($this->context);
+        $this->file       = new File\File($this->context);
     }
     
     
@@ -81,7 +81,7 @@ class DirectAdmin {
      * @return string
      */
     public function getHost(): string {
-        return $this->adapter->getHost();
+        return $this->context->getHost();
     }
     
     /**
@@ -89,16 +89,25 @@ class DirectAdmin {
      * @return integer
      */
     public function getPort(): int {
-        return $this->adapter->getPort();
+        return $this->context->getPort();
     }
 
     /**
-     * Sets the Subuser and Domain for the Adapter
-     * @param string $subuser
+     * Sets the Reseller for the Context
+     * @param string $reseller
+     * @return void
+     */
+    public function setReseller(string $reseller): void {
+        $this->context->setReseller($reseller);
+    }
+
+    /**
+     * Sets the User and Domain for the Context
+     * @param string $user
      * @param string $domain
      * @return void
      */
-    public function setUser(string $subuser, string $domain): void {
-        $this->adapter->setUser($subuser, $domain);
+    public function setUser(string $user, string $domain): void {
+        $this->context->setUser($user, $domain);
     }
 }
