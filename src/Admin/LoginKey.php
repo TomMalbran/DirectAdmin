@@ -1,36 +1,52 @@
 <?php
 namespace DirectAdmin\Admin;
 
+use DirectAdmin\Context;
 use DirectAdmin\Adapter;
+use DirectAdmin\Result;
 
 /**
  * The Login Keys
  */
-class LoginKey {
-    
-    private $adapter;
-    
-    /**
-     * Creates a new LoginKey instance
-     * @param Adapter $adapter
-     */
-    public function __construct(Adapter $adapter) {
-        $this->adapter = $adapter;
-    }
-    
-    
+class LoginKey extends Adapter {
     
     /**
      * Creates a new Login Key
+     * @param string $key
+     * @param string $password
+     * @param string $ip
+     * @param string $keyname
+     * @return Response
+     */
+    public function create(string $key, string $password, string $ip, string $keyname): Response {
+        $fields = $this->createFields($key, $password, $ip, $keyname, true);
+        return $this->post(Context::Admin, "/CMD_API_LOGIN_KEYS", $fields);
+    }
+
+    /**
+     * Edits a Login Key
+     * @param string $key
+     * @param string $password
+     * @param string $ip
+     * @param string $keyname
+     * @return Response
+     */
+    public function edit(string $key, string $password, string $ip, string $keyname): Response {
+        $fields = $this->createFields($key, $password, $ip, $keyname, false);
+        return $this->post(Context::Admin, "/CMD_API_LOGIN_KEYS", $fields);
+    }
+
+    /**
+     * Creates the Login Key fields
      * @param string  $key
      * @param string  $password
      * @param string  $ip
      * @param string  $keyname
      * @param boolean $isCreate Optional.
-     * @return array|null
+     * @return array
      */
-    public function edit($key, $password, $ip, $keyname, $isCreate = true) {
-        return $this->adapter->query("/CMD_API_LOGIN_KEYS", [
+    private function createFields(string $key, string $password, string $ip, string $keyname, bool $isCreate): array {
+        return [
             "action"         => $isCreate ? "create" : "modify",
             "keyname"        => $keyname,
             "key"            => $key,
@@ -48,19 +64,21 @@ class LoginKey {
             "ips"            => $ip,
             "passwd"         => $password,
             "create"         => $isCreate ? "Create" : "Modify",
-        ]);
+        ];
     }
+
+
     
     /**
      * Deletes the Login Key
      * @param string $keyname
-     * @return array|null
+     * @return Response
      */
-    public function delete($keyname) {
-        return $this->adapter->query("/CMD_API_LOGIN_KEYS", [
-            "select1" => $keyname,
+    public function delete(string $keyname): Response {
+        return $this->post(Context::Admin, "/CMD_API_LOGIN_KEYS", [
             "delete"  => "Delete",
             "action"  => "select",
+            "select1" => $keyname,
         ]);
     }
 }

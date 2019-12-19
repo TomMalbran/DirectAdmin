@@ -1,50 +1,37 @@
 <?php
 namespace DirectAdmin\Admin;
 
+use DirectAdmin\Context;
 use DirectAdmin\Adapter;
+use DirectAdmin\Response;
 
 /**
  * The Mail Queue
  */
-class MailQueue {
-    
-    private $adapter;
-    
-    /**
-     * Creates a new MailQueue instance
-     * @param Adapter $adapter
-     */
-    public function __construct(Adapter $adapter) {
-        $this->adapter = $adapter;
-    }
-    
-    
+class MailQueue extends Adapter {
 
     /**
      * Returns the list with all the mail queue for the current server
      * @return array
      */
-    public function getAll() {
-        $request = $this->adapter->query("/CMD_API_MAIL_QUEUE");
-        $result  = [];
-        $index   = 0;
+    public function getAll(): array {
+        $response = $this->get(Context::Admin, "/CMD_API_MAIL_QUEUE");
+        $result   = [];
+        $index    = 0;
         
-        if (!empty($request) && empty($request["error"])) {
-            foreach ($request as $data) {
-                parse_str($data, $data);
-                $result[$index] = [
-                    "index"      => $index,
-                    "recipients" => [],
-                ] + $data;
-                
-                $recipient = 0;
-                while (!empty($data["r$recipient"])) {
-                    $result[$index]["recipients"][] = $data["r$recipient"];
-                    unset($result[$index]["r$recipient"]);
-                    $recipient += 1;
-                }
-                $index += 1;
+        foreach ($response->data as $data) {
+            $result[$index] = [
+                "index"      => $index,
+                "recipients" => [],
+            ] + $data;
+            
+            $recipient = 0;
+            while (!empty($data["r$recipient"])) {
+                $result[$index]["recipients"][] = $data["r$recipient"];
+                unset($result[$index]["r$recipient"]);
+                $recipient += 1;
             }
+            $index += 1;
         }
         return $result;
     }
@@ -54,10 +41,11 @@ class MailQueue {
      * @param integer $mailID
      * @return array
      */
-    public function getOne($mailID) {
-        return $this->adapter->query("/CMD_API_MAIL_QUEUE", [
+    public function getOne(int $mailID): array {
+        $response = $this->get(Context::Admin, "/CMD_API_MAIL_QUEUE", [
             "id" => $mailID,
         ]);
+        return $response->data;
     }
     
 
@@ -66,15 +54,15 @@ class MailQueue {
      * Does the given operation over the given mail ids
      * @param string[] $mailIDs
      * @param string   $operation
-     * @return array|null
+     * @return Response
      */
-    public function batch(array $mailIDs, $operation) {
+    public function batch(array $mailIDs, string $operation): Response {
         $fields = [ "action" => "select" ];
         $fields[$operation] = 1;
         
         foreach ($mailIDs as $index => $value) {
             $fields["select$index"] = $value;
         }
-        return $this->adapter->query("/CMD_API_MAIL_QUEUE", $fields);
+        return $this->post(Context::Admin, "/CMD_API_MAIL_QUEUE", $fields);
     }
 }

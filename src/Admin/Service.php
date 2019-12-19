@@ -1,31 +1,22 @@
 <?php
 namespace DirectAdmin\Admin;
 
+use DirectAdmin\Context;
 use DirectAdmin\Adapter;
+use DirectAdmin\Result;
 
 /**
  * The Service Monitor
  */
-class Service {
-    
-    private $adapter;
-    
-    /**
-     * Creates a new Service instance
-     * @param Adapter $adapter
-     */
-    public function __construct(Adapter $adapter) {
-        $this->adapter = $adapter;
-    }
-    
-    
+class Service extends Adapter {
     
     /**
      * Returns the list with the status of all the services
      * @return array
      */
-    public function getAll() {
-        return $this->adapter->query("/CMD_API_SHOW_SERVICES");
+    public function getAll(): array {
+        $response = $this->get(Context::Admin, "/CMD_API_SHOW_SERVICES");
+        return $response->data;
     }
     
     
@@ -33,10 +24,10 @@ class Service {
     /**
      * Starts the given service
      * @param string $service
-     * @return array|null
+     * @return Response
      */
-    public function start($service) {
-        return $this->adapter->query("/CMD_API_SERVICE", [
+    public function start(string $service): Response {
+        return $this->post(Context::Admin, "/CMD_API_SERVICE", [
             "action"  => "start",
             "service" => $service,
         ]);
@@ -45,10 +36,10 @@ class Service {
     /**
      * Stops the given service
      * @param string $service
-     * @return array|null
+     * @return Response
      */
-    public function stop($service) {
-        return $this->adapter->query("/CMD_API_SERVICE", [
+    public function stop(string $service): Response {
+        return $this->post(Context::Admin, "/CMD_API_SERVICE", [
             "action"  => "stop",
             "service" => $service,
         ]);
@@ -57,10 +48,10 @@ class Service {
     /**
      * Restarts the given service
      * @param string $service
-     * @return array|null
+     * @return Response
      */
-    public function restart($service) {
-        return $this->adapter->query("/CMD_API_SERVICE", [
+    public function restart(string $service): Response {
+        return $this->post(Context::Admin, "/CMD_API_SERVICE", [
             "action"  => "restart",
             "service" => $service,
         ]);
@@ -69,10 +60,10 @@ class Service {
     /**
      * Reloads the given service
      * @param string $service
-     * @return array|null
+     * @return Response
      */
-    public function reload($service) {
-        return $this->adapter->query("/CMD_API_SERVICE", [
+    public function reload(string $service): Response {
+        return $this->post(Context::Admin, "/CMD_API_SERVICE", [
             "action"  => "reload",
             "service" => $service,
         ]);
@@ -81,11 +72,11 @@ class Service {
     /**
      * Reboots the server
      * @param string $adminpass
-     * @return array|null
+     * @return Response
      */
-    public function rebootServer($adminpass) {
-        return $this->adapter->query("/CMD_API_REBOOT", [
+    public function rebootServer(string $adminpass): Response {
+        return $this->post(Context::Admin, "/CMD_API_REBOOT", [
             "passwd" => $adminpass,
-        ], "POST");
+        ]);
     }
 }
