@@ -1,35 +1,22 @@
 <?php
 namespace DirectAdmin\Email;
 
+use DirectAdmin\Context;
 use DirectAdmin\Adapter;
 use DirectAdmin\Response;
 
 /**
  * The Email Accounts
  */
-class Email {
-    
-    private $adapter;
+class Email extends Adapter {
     
     /**
-     * Creates a new Email instance
-     * @param Adapter $adapter
-     */
-    public function __construct(Adapter $adapter) {
-        $this->adapter = $adapter;
-    }
-    
-    
-    
-    /**
-     * Returns a list with all the Email Accounts Data for the given domain. Requires user login
+     * Returns a list with all the Email Accounts Data. Requires user login
      * @return array
      */
     public function getAll(): array {
-        $domain   = $this->adapter->getDomain();
-        $response = $this->adapter->get("/CMD_API_POP", [
+        $response = $this->get(Context::User, "/CMD_API_POP", [
             "action" => "full_list",
-            "domain" => $domain,
         ]);
         
         $result = [];
@@ -38,7 +25,7 @@ class Email {
             $result[] = [
                 "index"       => $index,
                 "user"        => $user,
-                "email"       => "$user@$domain",
+                "email"       => "$user@{$this->context->domain}",
                 "quota"       => !empty($data["quota"]) ? (float)$data["quota"] : 0,
                 "usage"       => !empty($data["usage"]) ? (float)$data["usage"] : 0,
                 "isSuspended" => !empty($data["suspended"]) ? $data["suspended"] == "yes" : false,
@@ -49,27 +36,25 @@ class Email {
     }
     
     /**
-     * Returns a list with all the Email Accounts usernames for the given domain. Requires user login
+     * Returns a list with all the Email Accounts usernames. Requires user login
      * @return string[]
      */
     public function getUsers(): array {
-        $response = $this->adapter->get("/CMD_API_POP", [
+        $response = $this->get(Context::User, "/CMD_API_POP", [
             "action" => "list",
-            "domain" => $this->adapter->getDomain(),
         ]);
         return $response->list;
     }
     
     /**
-     * Returns the Quota information for the given Email Account for the given domain. Requires user login
+     * Returns the Quota information for the given Email Account. Requires user login
      * @param string $user
      * @return Response
      */
     public function getQuota(string $user): Response {
-        return $this->adapter->get("/CMD_API_POP", [
-            "type"   => "quota",
-            "domain" => $this->adapter->getDomain(),
-            "user"   => $user,
+        return $this->get(Context::User, "/CMD_API_POP", [
+            "type" => "quota",
+            "user" => $user,
         ]);
     }
     
@@ -86,7 +71,7 @@ class Email {
         $fields = $this->createFields([
             "action" => "create",
         ], $user, $password, $quota);
-        return $this->adapter->post("/CMD_API_POP", $fields);
+        return $this->post(Context::User, "/CMD_API_POP", $fields);
     }
     
     /**
@@ -102,7 +87,7 @@ class Email {
             "action"  => "modify",
             "newuser" => $newuser,
         ], $user, $password, $quota);
-        return $this->adapter->post("/CMD_API_POP", $fields);
+        return $this->post(Context::User, "/CMD_API_POP", $fields);
     }
     
     /**
@@ -115,9 +100,8 @@ class Email {
      */
     private function createFields(array $fields, string $user, string $password, int $quota): array {
         $fields += [
-            "domain" => $this->adapter->getDomain(),
-            "user"   => $user,
-            "quota"  => $quota,
+            "user"  => $user,
+            "quota" => $quota,
         ];
         if (!empty($password)) {
             $fields += [
@@ -136,9 +120,9 @@ class Email {
      * @return string
      */
     public function getOutlook(string $user): string {
-        $domain   = $this->adapter->getDomain();
+        $domain   = $this->context->domain;
         $email    = "$user@$domain";
-        $response = $this->adapter->get("/CMD_EMAIL_REG/$domain/$email/$email/outlook_$user.reg");
+        $response = $this->get(Context::User, "/CMD_EMAIL_REG/$domain/$email/$email/outlook_$user.reg");
         return $response->raw;
     }
     
@@ -148,10 +132,9 @@ class Email {
      * @return Response
      */
     public function suspend(string $user): Response {
-        return $this->adapter->post("/CMD_API_POP", [
+        return $this->post(Context::User, "/CMD_API_POP", [
             "suspend" => "Suspend",
             "action"  => "delete",
-            "domain"  => $this->adapter->getDomain(),
             "user"    => $user,
         ]);
     }
@@ -162,10 +145,9 @@ class Email {
      * @return Response
      */
     public function unsuspend(string $user): Response {
-        return $this->adapter->post("/CMD_API_POP", [
+        return $this->post(Context::User, "/CMD_API_POP", [
             "unsuspend" => "Unsuspend",
             "action"    => "delete",
-            "domain"    => $this->adapter->getDomain(),
             "user"      => $user,
         ]);
     }
@@ -178,10 +160,9 @@ class Email {
      * @return Response
      */
     public function delete(string $user): Response {
-        return $this->adapter->post("/CMD_API_POP", [
+        return $this->post(Context::User, "/CMD_API_POP", [
             "action"           => "delete",
             "clean_forwarders" => "yes",
-            "domain"           => $this->adapter->getDomain(),
             "user"             => $user,
         ]);
     }
@@ -197,7 +178,6 @@ class Email {
         $fields = [
             "action" => "delete",
             "purge"  => "Purge From",
-            "domain" => $this->adapter->getDomain(),
             "file"   => $file,
             "what"   => $what,
         ];
@@ -205,7 +185,7 @@ class Email {
         foreach ($users as $index => $value) {
             $fields["select$index"] = $value;
         }
-        return $this->adapter->post("/CMD_EMAIL_POP", $fields);
+        return $this->post(Context::User, "/CMD_EMAIL_POP", $fields);
     }
     
     
@@ -216,9 +196,8 @@ class Email {
      * @return Response
      */
     public function toggleMXDNS(bool $disable): Response {
-        return $this->adapter->post("/CMD_API_DNS_MX", [
+        return $this->post(Context::User, "/CMD_API_DNS_MX", [
             "action"   => "internal",
-            "domain"   => $this->adapter->getDomain(),
             "internal" => $disable ? "no" : "yes",
         ]);
     }

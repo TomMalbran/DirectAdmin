@@ -1,51 +1,45 @@
 <?php
 namespace DirectAdmin\Email;
 
+use DirectAdmin\Context;
 use DirectAdmin\Adapter;
 use DirectAdmin\Response;
 
 /**
  * The Email Vacations
  */
-class Vacation {
-    
-    private $adapter;
+class Vacation extends Adapter {
     
     /**
-     * Creates a new Vacation instance
-     * @param Adapter $adapter
-     */
-    public function __construct(Adapter $adapter) {
-        $this->adapter = $adapter;
-    }
-    
-    
-    
-    /**
-     * Returns a list with all the Vacations Messages for the given domain. Requires user login
+     * Returns a list with all the Vacations Messages. Requires user login
      * @return array
      */
     public function getAll(): array {
-        $response = $this->adapter->get("/CMD_API_EMAIL_VACATION", [
-            "domain" => $this->adapter->getDomain(),
-        ]);
-            
-        $result = [ "data" => [], "list" => [] ];
-        $index  = 0;
+        $response = $this->get(Context::User, "/CMD_API_EMAIL_VACATION");
+        $result   = [];
+        $index    = 0;
+
         foreach ($response->keys as $user) {
-            $data = $this->adapter->get("/CMD_API_EMAIL_VACATION_MODIFY", [
-                "domain" => $this->adapter->getDomain(),
-                "user"   => $user,
+            $data = $this->get(Context::User, "/CMD_API_EMAIL_VACATION_MODIFY", [
+                "user" => $user,
             ]);
             
-            $result["data"][$index] = [
+            $result[] = [
                 "index" => $index,
                 "user"  => $user,
             ] + $data->data;
-            $result["list"][] = $user;
             $index += 1;
         }
         return $result;
+    }
+
+    /**
+     * Returns a list with all the Vacations Messages usernames. Requires user login
+     * @return string[]
+     */
+    public function getUsers(): array {
+        $response = $this->get(Context::User, "/CMD_API_EMAIL_VACATION");
+        return $response->keys;
     }
     
     
@@ -61,7 +55,7 @@ class Vacation {
      */
     public function create(string $user, string $text, int $fromTime, int $toTime, bool $isEdit): Response {
         $fields = $this->createFields("create", $user, $text, $fromTime, $toTime);
-        return $this->adapter->post("/CMD_API_EMAIL_VACATION", $fields);
+        return $this->post(Context::User, "/CMD_API_EMAIL_VACATION", $fields);
     }
     
     /**
@@ -75,7 +69,7 @@ class Vacation {
      */
     public function edit(string $user, string $text, int $fromTime, int $toTime, bool $isEdit): Response {
         $fields = $this->getFields("modify", $user, $text, $fromTime, $toTime);
-        return $this->adapter->post("/CMD_API_EMAIL_VACATION", $fields);
+        return $this->post(Context::User, "/CMD_API_EMAIL_VACATION", $fields);
     }
     
     /**
@@ -90,7 +84,6 @@ class Vacation {
     private function getFields(string $action, string $user, string $text, int $fromTime, int $toTime): array {
         return [
             "action"     => $action,
-            "domain"     => $this->adapter->getDomain(),
             "user"       => $user,
             "text"       => $text,
             "starttime"  => "morning",
@@ -112,9 +105,8 @@ class Vacation {
      * @return Response
      */
     public function delete(string $user): Response {
-        return $this->adapter->post("/CMD_API_EMAIL_VACATION", [
+        return $this->post(Context::User, "/CMD_API_EMAIL_VACATION", [
             "action"  => "delete",
-            "domain"  => $this->adapter->getDomain(),
             "select0" => $user,
         ]);
     }

@@ -1,53 +1,47 @@
 <?php
 namespace DirectAdmin\Email;
 
+use DirectAdmin\Context;
 use DirectAdmin\Adapter;
 use DirectAdmin\Response;
 
 /**
  * The Email Responders
  */
-class Responder {
-    
-    private $adapter;
+class Responder extends Adapter {
     
     /**
-     * Creates a new Responder instance
-     * @param Adapter $adapter
-     */
-    public function __construct(Adapter $adapter) {
-        $this->adapter = $adapter;
-    }
-    
-    
-    
-    /**
-     * Returns a list with all the Email Autoresponders for the given domain. Requires user login
+     * Returns a list with all the Email Autoresponders. Requires user login
      * @return array
      */
     public function getAll(): array {
-        $response = $this->adapter->get("/CMD_API_EMAIL_AUTORESPONDER", [
-            "domain" => $this->adapter->getDomain(),
-        ]);
+        $response = $this->get(Context::User, "/CMD_API_EMAIL_AUTORESPONDER");
+        $result   = [];
+        $index    = 0;
 
-        $result = [ "data" => [], "list" => [] ];
-        $index  = 0;
         foreach ($response->data as $user => $cc) {
-            $data = $this->adapter->get("/CMD_API_EMAIL_AUTORESPONDER_MODIFY", [
-                "domain" => $this->adapter->getDomain(),
-                "user"   => $user,
+            $data = $this->get(Context::User, "/CMD_API_EMAIL_AUTORESPONDER_MODIFY", [
+                "user" => $user,
             ]);
             
-            $result["data"][$index] = [
+            $result[] = [
                 "index" => $index,
                 "user"  => $user,
                 "cc"    => $cc,
                 "text"  => $data->data["text"],
             ];
-            $result["list"][] = $user;
             $index += 1;
         }
         return $result;
+    }
+
+    /**
+     * Returns a list with all the Email Autoresponders usernames. Requires user login
+     * @return string[]
+     */
+    public function getUsers(): array {
+        $response = $this->get(Context::User, "/CMD_API_EMAIL_AUTORESPONDER");
+        return $response->keys;
     }
     
     
@@ -61,7 +55,7 @@ class Responder {
      */
     public function create(string $user, string $text, string $cc = ""): Response {
         $fields = $this->createFields("create", $user, $text, $cc);
-        return $this->adapter->post("/CMD_API_EMAIL_AUTORESPONDER", $fields);
+        return $this->post(Context::User, "/CMD_API_EMAIL_AUTORESPONDER", $fields);
     }
     
     /**
@@ -73,7 +67,7 @@ class Responder {
      */
     public function edit(string $user, string $text, string $cc = ""): Response {
         $fields = $this->createFields("modify", $user, $text, $cc);
-        return $this->adapter->post("/CMD_API_EMAIL_AUTORESPONDER", $fields);
+        return $this->post(Context::User, "/CMD_API_EMAIL_AUTORESPONDER", $fields);
     }
     
     /**
@@ -87,7 +81,6 @@ class Responder {
     private function createFields(string $action, string $user, string $text, string $cc = ""): array {
         $fields = [
             "action" => $action,
-            "domain" => $this->adapter->getDomain(),
             "user"   => $user,
             "text"   => $text,
         ];
@@ -108,9 +101,8 @@ class Responder {
      * @return Response
      */
     public function delete(string $user): Response {
-        return $this->adapter->post("/CMD_API_EMAIL_AUTORESPONDER", [
+        return $this->post(Context::User, "/CMD_API_EMAIL_AUTORESPONDER", [
             "action"  => "delete",
-            "domain"  => $this->adapter->getDomain(),
             "select0" => $user,
         ]);
     }

@@ -1,50 +1,44 @@
 <?php
 namespace DirectAdmin\Email;
 
+use DirectAdmin\Context;
 use DirectAdmin\Adapter;
 use DirectAdmin\Response;
 
 /**
  * The Email Forwarders
  */
-class Forwarder {
-    
-    private $adapter;
+class Forwarder extends Adapter {
     
     /**
-     * Creates a new Forwarder instance
-     * @param Adapter $adapter
-     */
-    public function __construct(Adapter $adapter) {
-        $this->adapter = $adapter;
-    }
-    
-    
-    
-    /**
-     * Returns a list with all the Email Forwarders for the given domain. Requires user login
+     * Returns a list with all the Email Forwarders. Requires user login
      * @return array
      */
     public function getAll(): array {
-        $response = $this->adapter->get("/CMD_API_EMAIL_FORWARDERS", [
-            "domain" => $this->adapter->getDomain(),
-        ]);
-            
-        $result = [ "data" => [], "list" => [] ];
-        $index  = 0;
+        $response = $this->get(Context::User, "/CMD_API_EMAIL_FORWARDERS");
+        $result   = [];
+        $index    = 0;
+
         foreach ($response->data as $user => $dest) {
-            $result["data"][$index] = [
+            $result[] = [
                 "index" => $index,
                 "user"  => $user,
                 "dest"  => $dest,
                 "to"    => explode(",", $dest),
             ];
-            $result["list"][] = $user;
             $index += 1;
         }
         return $result;
     }
     
+    /**
+     * Returns a list with all the Email Forwarders usernames. Requires user login
+     * @return string[]
+     */
+    public function getUsers(): array {
+        $response = $this->get(Context::User, "/CMD_API_EMAIL_FORWARDERS");
+        return $response->keys;
+    }
     
     
     /**
@@ -54,9 +48,8 @@ class Forwarder {
      * @return Response
      */
     public function create(string $user, string $email): Response {
-        return $this->adapter->post("/CMD_API_EMAIL_FORWARDERS", [
+        return $this->post(Context::User, "/CMD_API_EMAIL_FORWARDERS", [
             "action" => "create",
-            "domain" => $this->adapter->getDomain(),
             "user"   => $user,
             "email"  => $email,
         ]);
@@ -69,9 +62,8 @@ class Forwarder {
      * @return Response
      */
     public function edit(string $user, string $email): Response {
-        return $this->adapter->post("/CMD_API_EMAIL_FORWARDERS", [
+        return $this->post(Context::User, "/CMD_API_EMAIL_FORWARDERS", [
             "action" => "modify",
-            "domain" => $this->adapter->getDomain(),
             "user"   => $user,
             "email"  => $email,
         ]);
@@ -83,9 +75,8 @@ class Forwarder {
      * @return Response
      */
     public function delete(string $user): Response {
-        return $this->adapter->post("/CMD_API_EMAIL_FORWARDERS", [
+        return $this->post(Context::User, "/CMD_API_EMAIL_FORWARDERS", [
             "action"  => "delete",
-            "domain"  => $this->adapter->getDomain(),
             "select0" => $user,
         ]);
     }
