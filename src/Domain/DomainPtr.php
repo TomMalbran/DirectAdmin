@@ -1,35 +1,22 @@
 <?php
 namespace DirectAdmin\Domain;
 
+use DirectAdmin\Context;
 use DirectAdmin\Adapter;
 use DirectAdmin\Response;
 
 /**
  * The Server Domain Pointers
  */
-class DomainPtr {
-    
-    private $adapter;
-    
-    /**
-     * Creates a new DomainPtr instance
-     * @param Adapter $adapter
-     */
-    public function __construct(Adapter $adapter) {
-        $this->adapter = $adapter;
-    }
-    
-    
+class DomainPtr extends Adapter {
     
     /**
      * Returns a list of Domain Pointers. Requires user login
      * @return array
      */
     public function getAll(): array {
+        $response = $this->get(Context::User, "/CMD_API_DOMAIN_POINTER");
         $result   = [];
-        $response = $this->adapter->get("/CMD_API_DOMAIN_POINTER", [
-            "domain" => $this->adapter->getDomain(),
-        ]);
         
         foreach ($response->data as $from => $alias) {
             $result[] = [
@@ -51,13 +38,12 @@ class DomainPtr {
     public function create(string $from, bool $isAlias = true): Response {
         $fields = [
             "action" => "add",
-            "domain" => $this->adapter->getDomain(),
             "from"   => $from,
         ];
         if ($isAlias) {
             $fields["alias"] = "yes";
         }
-        return $this->adapter->post("/CMD_API_DOMAIN_POINTER", $fields);
+        return $this->post(Context::User, "/CMD_API_DOMAIN_POINTER", $fields);
     }
     
     /**
@@ -66,9 +52,8 @@ class DomainPtr {
      * @return Response
      */
     public function delete(string $from): Response {
-        return $this->adapter->post("/CMD_API_DOMAIN_POINTER", [
+        return $this->post(Context::User, "/CMD_API_DOMAIN_POINTER", [
             "action"  => "delete",
-            "domain"  => $this->adapter->getDomain(),
             "select0" => $from,
         ]);
     }

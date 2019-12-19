@@ -1,35 +1,22 @@
 <?php
 namespace DirectAdmin\Domain;
 
+use DirectAdmin\Context;
 use DirectAdmin\Adapter;
 use DirectAdmin\Response;
 
 /**
  * The Server Redirects
  */
-class Redirect {
-    
-    private $adapter;
-    
-    /**
-     * Creates a new Redirect instance
-     * @param Adapter $adapter
-     */
-    public function __construct(Adapter $adapter) {
-        $this->adapter = $adapter;
-    }
-    
-    
+class Redirect extends Adapter {
     
     /**
      * Returns a list of Redirects. Requires user login
      * @return array
      */
     public function getAll(): array {
+        $response = $this->get(Context::User, "/CMD_API_REDIRECT");
         $result   = [];
-        $response = $this->adapter->get("/CMD_API_REDIRECT", [
-            "domain" => $this->adapter->getDomain(),
-        ]);
         
         foreach ($response->data as $from => $to) {
             $result[] = [
@@ -49,9 +36,8 @@ class Redirect {
      * @return Response
      */
     public function create(string $from, string $to): Response {
-        return $this->adapter->post("/CMD_API_REDIRECT", [
+        return $this->post(Context::User, "/CMD_API_REDIRECT", [
             "action" => "add",
-            "domain" => $this->adapter->getDomain(),
             "from"   => $from,
             "to"     => $to,
         ]);
@@ -63,9 +49,8 @@ class Redirect {
      * @return Response
      */
     public function delete(string $from): Response {
-        return $this->adapter->post("/CMD_API_REDIRECT", [
+        return $this->post(Context::User, "/CMD_API_REDIRECT", [
             "action"  => "delete",
-            "domain"  => $this->adapter->getDomain(),
             "select0" => $from,
         ]);
     }

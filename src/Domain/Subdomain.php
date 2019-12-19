@@ -1,34 +1,21 @@
 <?php
 namespace DirectAdmin\Domain;
 
+use DirectAdmin\Context;
 use DirectAdmin\Adapter;
 use DirectAdmin\Response;
 
 /**
  * The Server Subdomains
  */
-class Subdomain {
-    
-    private $adapter;
-    
-    /**
-     * Creates a new Subdomain instance
-     * @param Adapter $adapter
-     */
-    public function __construct(Adapter $adapter) {
-        $this->adapter = $adapter;
-    }
-    
-    
+class Subdomain extends Adapter {
     
     /**
      * Returns a list of Subdomains. Requires user login
      * @return string[]
      */
     public function getAll(): array {
-        $response = $this->adapter->get("/CMD_API_SUBDOMAINS", [
-            "domain" => $this->adapter->getDomain(),
-        ]);
+        $response = $this->get(Context::User, "/CMD_API_SUBDOMAINS");
         return $response->list;
     }
     
@@ -40,9 +27,8 @@ class Subdomain {
      * @return Response
      */
     public function create(string $subdomain): Response {
-        return $this->adapter->post("/CMD_API_SUBDOMAINS", [
+        return $this->post(Context::User, "/CMD_API_SUBDOMAINS", [
             "action"    => "create",
-            "domain"    => $this->adapter->getDomain(),
             "subdomain" => $subdomain,
         ]);
     }
@@ -54,9 +40,8 @@ class Subdomain {
      * @return Response
      */
     public function delete(string $subdomain, bool $delContents = false): Response {
-        return $this->adapter->post("/CMD_API_SUBDOMAINS", [
+        return $this->post(Context::User, "/CMD_API_SUBDOMAINS", [
             "action"   => "delete",
-            "domain"   => $this->adapter->getDomain(),
             "select0"  => $subdomain,
             "contents" => $delContents ? "yes" : "no",
         ]);
