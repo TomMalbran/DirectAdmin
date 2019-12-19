@@ -1,25 +1,14 @@
 <?php
 namespace DirectAdmin\File;
 
+use DirectAdmin\Context;
 use DirectAdmin\Adapter;
 use DirectAdmin\Response;
 
 /**
  * The Server Files
  */
-class File {
-    
-    private $adapter;
-    
-    /**
-     * Creates a new File instance
-     * @param Adapter $adapter
-     */
-    public function __construct(Adapter $adapter) {
-        $this->adapter = $adapter;
-    }
-    
-    
+class File extends Adapter {
     
     /**
      * Returns the data for the files and a list of them. Requires user login
@@ -27,7 +16,7 @@ class File {
      * @return array
      */
     public function getAll(string $path): array {
-        $response = $this->adapter->get("/CMD_API_FILE_MANAGER", [ "path" => $path ]);
+        $response = $this->get(Context::User, "/CMD_API_FILE_MANAGER", [ "path" => $path ]);
         $parent   = str_replace(".", "_", substr($path, 0, strrpos($path, "/")));
         $result   = [];
         
@@ -57,8 +46,8 @@ class File {
      * @return Response
      */
     public function getSize(string $path, string $name): Response {
-        $fullPath = $this->adapter->getPublicPath($path);
-        return $this->adapter->get("/CMD_API_FILE_MANAGER", [
+        $fullPath = $this->context->getPublicPath($path);
+        return $this->get(Context::User, "/CMD_API_FILE_MANAGER", [
             "action" => "filesize",
             "path"   => "$fullPath/$name",
         ]);
@@ -74,8 +63,8 @@ class File {
      * @return Response
      */
     public function edit(string $path, string $name, string $text): Response {
-        $fullPath = $this->adapter->getPublicPath($path);
-        return $this->adapter->post("/CMD_API_FILE_MANAGER", [
+        $fullPath = $this->context->getPublicPath($path);
+        return $this->post(Context::User, "/CMD_API_FILE_MANAGER", [
             "action"   => "edit",
             "path"     => $fullPath,
             "text"     => $text,
@@ -93,7 +82,7 @@ class File {
      * @return string
      */
     public function upload(string $path, string $fileName, string $filePath, string $username, string $password): string {
-        return $this->adapter->uploadFile($path, $fileName, $filePath, $username, $password);
+        return $this->uploadFile($path, $fileName, $filePath, $username, $password);
     }
 
     /**
@@ -107,8 +96,8 @@ class File {
      */
     public function uploadFTP(string $username, string $path, string $fileName, string $filePath, string $password): string {
         $ftp      = "kappa";
-        $domain   = $this->adapter->getDomain();
-        $response = $this->adapter->get("/CMD_API_FTP", [ "domain" => $domain ]);
+        $domain   = $this->context->domain;
+        $response = $this->get(Context::User, "/CMD_API_FTP");
         $pdom     = "@" . str_replace(".", "_", $domain);
         
         if ($response->hasError) {
@@ -125,24 +114,21 @@ class File {
         }
         if (!empty($fields)) {
             $fields["action"] = "delete";
-            $fields["domain"] = $domain;
-            $this->adapter->post("/CMD_API_FTP", $fields);
+            $this->post(Context::User, "/CMD_API_FTP", $fields);
         }
         
-        $this->adapter->post("/CMD_API_FTP", [
+        $this->post(Context::User, "/CMD_API_FTP", [
             "action"     => "create",
-            "domain"     => $domain,
             "user"       => $ftp,
             "type"       => "custom",
             "custom_val" => "/home/$username",
             "passwd"     => $password,
             "passwd2"    => $password,
         ]);
-        $result = $this->adapter->uploadFile($path, $fileName, $filePath, "$ftp@$domain", $password);
+        $result = $this->uploadFile($path, $fileName, $filePath, "$ftp@$domain", $password);
         
-        $this->adapter->post("/CMD_API_FTP", [
+        $this->post(Context::User, "/CMD_API_FTP", [
             "action"  => "delete",
-            "domain"  => $domain,
             "select0" => $ftp,
         ]);
         
@@ -156,7 +142,7 @@ class File {
      * @return string
      */
     public function download(string $path, string $file): string {
-        $response = $this->adapter->get("/CMD_FILE_MANAGER", [
+        $response = $this->get(Context::User, "/CMD_FILE_MANAGER", [
             "path" => "$path/$file",
         ]);
         return $response->raw;
@@ -169,8 +155,8 @@ class File {
      * @return Response
      */
     public function extract(string $path, string $file): Response {
-        $fullPath = $this->adapter->getPublicPath($path);
-        return $this->adapter->post("/CMD_API_FILE_MANAGER", [
+        $fullPath = $this->context->getPublicPath($path);
+        return $this->post(Context::User, "/CMD_API_FILE_MANAGER", [
             "action"    => "extract",
             "path"      => "$fullPath/$file",
             "directory" => $fullPath,
@@ -187,8 +173,8 @@ class File {
      * @return Response
      */
     public function rename(string $path, string $oldName, string $newName, bool $overwrite = false): Response {
-        $fullPath = $this->adapter->getPublicPath($path);
-        return $this->adapter->post("/CMD_API_FILE_MANAGER", [
+        $fullPath = $this->context->getPublicPath($path);
+        return $this->post(Context::User, "/CMD_API_FILE_MANAGER", [
             "action"    => "rename",
             "path"      => $fullPath,
             "old"       => $oldName,
@@ -206,8 +192,8 @@ class File {
      * @return Response
      */
     public function duplicate(string $path, string $oldName, string $newName, bool $overwrite = false): Response {
-        $fullPath = $this->adapter->getPublicPath($path);
-        return $this->adapter->post("/CMD_API_FILE_MANAGER", [
+        $fullPath = $this->context->getPublicPath($path);
+        return $this->post(Context::User, "/CMD_API_FILE_MANAGER", [
             "action"    => "copy",
             "path"      => $fullPath,
             "old"       => $oldName,
@@ -223,8 +209,8 @@ class File {
      * @return Response
      */
     public function resetOwner(string $path, string $file): Response {
-        $fullPath = $this->adapter->getPublicPath($path);
-        return $this->adapter->post("/CMD_API_FILE_MANAGER", [
+        $fullPath = $this->context->getPublicPath($path);
+        return $this->post(Context::User, "/CMD_API_FILE_MANAGER", [
             "action" => "resetowner",
             "path"   => "$fullPath/$file",
         ]);
@@ -242,7 +228,7 @@ class File {
             "button" => "permission",
             "chmod"  => $chmod,
         ], $path, $files);
-        return $this->adapter->post("/CMD_API_FILE_MANAGER", $fields);
+        return $this->post(Context::User, "/CMD_API_FILE_MANAGER", $fields);
     }
     
     /**
@@ -287,7 +273,7 @@ class File {
     public function compress(string $path, string $name, $files): Response {
         $response = $this->addToClipboard($path, $files);
         if (!$response->hasError) {
-            $response = $this->adapter->post("/CMD_API_FILE_MANAGER", [
+            $response = $this->post(Context::User, "/CMD_API_FILE_MANAGER", [
                 "action" => "compress",
                 "path"   => $path,
                 "file"   => $name,
@@ -308,7 +294,7 @@ class File {
             "button" => "delete",
             "chmod"  => $chmod,
         ], $path, $files);
-        return $this->adapter->post("/CMD_API_FILE_MANAGER", $fields);
+        return $this->post(Context::User, "/CMD_API_FILE_MANAGER", $fields);
     }
     
     
@@ -324,7 +310,7 @@ class File {
             "add"   => "clipboard",
             "chmod" => $chmod,
         ], $path, $files);
-        return $this->adapter->post("/CMD_API_FILE_MANAGER", $fields);
+        return $this->post(Context::User, "/CMD_API_FILE_MANAGER", $fields);
     }
     
     /**
@@ -335,7 +321,7 @@ class File {
      */
     public function doInClipboard(string $action, string $path = ""): Response {
         $fields = $this->createFields([ $action => "clipboard" ], $path);
-        return $this->adapter->post("/CMD_API_FILE_MANAGER", $fields);
+        return $this->post(Context::User, "/CMD_API_FILE_MANAGER", $fields);
     }
 
 
@@ -348,7 +334,7 @@ class File {
      * @return array
      */
     private function createFields(array $fields, string $path, $file = null): array {
-        $fullPath = $this->adapter->getPublicPath($path);
+        $fullPath = $this->context->getPublicPath($path);
         $files    = !is_array($file) ? [ $file ] : $file;
 
         $fields["action"] = "multiple";

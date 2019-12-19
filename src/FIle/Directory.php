@@ -1,25 +1,14 @@
 <?php
 namespace DirectAdmin\File;
 
+use DirectAdmin\Context;
 use DirectAdmin\Adapter;
 use DirectAdmin\Response;
 
 /**
  * The Server Directories
  */
-class Directory {
-    
-    private $adapter;
-    
-    /**
-     * Creates a new Directory instance
-     * @param Adapter $adapter
-     */
-    public function __construct(Adapter $adapter) {
-        $this->adapter = $adapter;
-    }
-    
-    
+class Directory extends Adapter {
     
     /**
      * Returns the protections for the given Directory. Requires user login
@@ -28,8 +17,8 @@ class Directory {
      * @return Response
      */
     public function getProtections(string $path, string $name): Response {
-        $fullPath = $this->adapter->getPublicPath($path);
-        $response = $this->adapter->get("/CMD_API_FILE_MANAGER", [
+        $fullPath = $this->context->getPublicPath($path);
+        $response = $this->get(Context::User, "/CMD_API_FILE_MANAGER", [
             "action" => "protect",
             "path"   => "$fullPath/$name",
         ]);
@@ -53,8 +42,8 @@ class Directory {
      * @return Response
      */
     public function create(string $path, string $name): Response {
-        $fullPath = $this->adapter->getPublicPath($path);
-        return $this->adapter->get("/CMD_API_FILE_MANAGER", [
+        $fullPath = $this->context->getPublicPath($path);
+        return $this->get(Context::User, "/CMD_API_FILE_MANAGER", [
             "action" => "folder",
             "path"   => $fullPath,
             "name"   => $name,
@@ -72,7 +61,7 @@ class Directory {
      * @return Response
      */
     public function protect(string $path, string $name, string $text, string $username, string $password, bool $isEnabled): Response {
-        $fullPath = $this->adapter->getPublicPath($path);
+        $fullPath = $this->context->getPublicPath($path);
         $fields   = [
             "action"  => "protect",
             "path"    => "$fullPath/$name",
@@ -84,7 +73,7 @@ class Directory {
         if ($isEnabled) {
             $fields["enabled"] = "yes";
         }
-        return $this->adapter->post("/CMD_API_FILE_MANAGER", $fields);
+        return $this->post(Context::User, "/CMD_API_FILE_MANAGER", $fields);
     }
     
     /**
@@ -95,8 +84,8 @@ class Directory {
      * @return Response
      */
     public function unprotect(string $path, string $name, string $username): Response {
-        $fullPath = $this->adapter->getPublicPath($path);
-        $response = $this->adapter->get("/CMD_API_FILE_MANAGER", [
+        $fullPath = $this->context->getPublicPath($path);
+        $response = $this->get(Context::User, "/CMD_API_FILE_MANAGER", [
             "action"  => "delete",
             "path"    => "$fullPath/$name",
             "select0" => $username,
@@ -105,7 +94,7 @@ class Directory {
             return $response;
         }
         
-        return $this->adapter->post("/CMD_API_FILE_MANAGER", [
+        return $this->post(Context::User, "/CMD_API_FILE_MANAGER", [
             "action" => "protect",
             "path"   => "$fullPath/$name",
             "name"   => " ",
