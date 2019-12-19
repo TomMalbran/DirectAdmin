@@ -1,54 +1,51 @@
 <?php
 namespace DirectAdmin\Reseller;
 
+use DirectAdmin\Context;
 use DirectAdmin\Adapter;
+use DirectAdmin\Response;
 
 /**
  * The Reseller Accounts
  */
-class Reseller {
-    
-    private $adapter;
-    
-    /**
-     * Creates a new Reseller instance
-     * @param Adapter $adapter
-     */
-    public function __construct(Adapter $adapter) {
-        $this->adapter = $adapter;
-    }
-    
-    
+class Reseller extends Adapter {
     
     /**
      * Returns the list of Resellers for the current server
      * @return array
      */
-    public function getAll() {
-        return $this->adapter->query("/CMD_API_SHOW_RESELLERS");
+    public function getAll(): array {
+        $response = $this->get(Context::Admin, "/CMD_API_SHOW_RESELLERS");
+        return $response->data;
     }
 
     /**
-     * Returns the users limits and usage
-     * @param string $username
+     * Returns the Reseller limits and usage
+     * @param string $user
      * @return array
      */
-    public function getInfo($username) {
+    public function getInfo(string $user): array {
         $fields = [ "bandwidth", "quota", "domainptr", "mysql", "nemailf", "nemailr", "nemails", "nsubdomains", "vdomains" ];
-        $config = $this->adapter->query("/CMD_API_RESELLER_STATS", [ "user" => $username ]);
+        $config = $this->get(Context::Admin, "/CMD_API_RESELLER_STATS", [ "user" => $user ]);
         
-        if (empty($config["error"])) {
-            $usage     = $this->adapter->query("/CMD_API_RESELLER_STATS", [ "user" => $username, "type" => "usage" ]);
-            $allocated = $this->adapter->query("/CMD_API_RESELLER_STATS", [ "user" => $username, "type" => "allocated" ]);
+        if (!$config->hasError) {
+            $usage     = $this->get(Context::Admin, "/CMD_API_RESELLER_STATS", [
+                "user" => $user,
+                "type" => "usage",
+            ]);
+            $allocated = $this->get(Context::Admin, "/CMD_API_RESELLER_STATS", [
+                "user" => $user,
+                "type" => "allocated",
+            ]);
         }
         $result = [];
         
         foreach ($fields as $field) {
-            if (isset($config[$field])) {
+            if (isset($config->data[$field])) {
                 $result[$field] = [
-                    "used"      => isset($usage[$field])     ? (int)$usage[$field]     : 0,
-                    "allocated" => isset($allocated[$field]) ? (int)$allocated[$field] : 0,
-                    "total"     => $config[$field] == "unlimited" ? -1 : (int)$config[$field],
+                    "used"      => isset($usage->data[$field])     ? (int)$usage->data[$field]     : 0,
+                    "allocated" => isset($allocated->data[$field]) ? (int)$allocated->data[$field] : 0,
+                    "total"     => $config->data[$field] == "unlimited" ? -1 : (int)$config->data[$field],
                 ];
             }
         }
@@ -61,10 +58,10 @@ class Reseller {
     /**
      * Creates a new Reseller
      * @param array $data
-     * @return array|null
+     * @return Response
      */
-    public function create(array $data) {
-        return $this->adapter->query("/CMD_API_ACCOUNT_RESELLER", [
+    public function create(array $data): Response {
+        return $this->post(Context::Admin, "/CMD_API_ACCOUNT_RESELLER", [
             "action"   => "create",
             "add"      => "Submit",
             "username" => $data["username"],
@@ -80,21 +77,21 @@ class Reseller {
     
     /**
      * Creates a new Reseller account with the given username and password. Requires Admin login
-     * @param string $username
+     * @param string $user
      * @param string $password
      * @param string $domain   Optional.
      * @param string $email    Optional.
-     * @return array|null
+     * @return Response
      */
-    public function createUnlimited($username, $password, $domain = "", $email = "") {
-        return $this->adapter->query("/CMD_API_ACCOUNT_RESELLER", [
+    public function createUnlimited(string $user, string $password, string $domain = "", string $email = ""): Response {
+        return $this->post(Context::Admin, "/CMD_API_ACCOUNT_RESELLER", [
             "action"       => "create",
             "add"          => "Submit",
-            "username"     => $username,
-            "email"        => !empty($email)  ? $email  : (!empty($domain) ? "info@$domain" : "info@$username.com"),
+            "username"     => $user,
             "passwd"       => $password,
             "passwd2"      => $password,
-            "domain"       => !empty($domain) ? $domain : "$username.com",
+            "email"        => !empty($email)  ? $email  : (!empty($domain) ? "info@$domain" : "info@$user.com"),
+            "domain"       => !empty($domain) ? $domain : "$user.com",
             "ubandwidth"   => "ON",
             "uquota"       => "ON",
             "uinode"       => "ON",
@@ -127,15 +124,15 @@ class Reseller {
     
     /**
      * Changes the Resellers's Package
-     * @param string $username
+     * @param string $user
      * @param string $package
-     * @return array|null
+     * @return Response
      */
-    public function changePackage($username, $package) {
-        return $this->adapter->query("/CMD_API_MODIFY_RESELLER", [
+    public function changePackage(string $user, string $package) {
+        return $this->post(Context::Admin, "/CMD_API_MODIFY_RESELLER", [
             "action"  => "package",
-            "user"    => $username,
+            "user"    => $user,
             "package" => $package,
-        ], "POST");
+        ]);
     }
 }

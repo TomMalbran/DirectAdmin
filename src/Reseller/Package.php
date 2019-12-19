@@ -1,43 +1,31 @@
 <?php
 namespace DirectAdmin\Reseller;
 
+use DirectAdmin\Context;
 use DirectAdmin\Adapter;
+use DirectAdmin\Result;
 
 /**
  * The Reseller Packages
  */
-class Package {
-    
-    private $adapter;
-    
-    /**
-     * Creates a new Package instance
-     * @param Adapter $adapter
-     */
-    public function __construct(Adapter $adapter) {
-        $this->adapter = $adapter;
-    }
-    
-    
+class Package extends Adapter {
     
     /**
      * Returns the list of users packages for the current Reseller
      * @return array
      */
     public function getUsers() {
-        $request = $this->adapter->query("/CMD_API_PACKAGES_USER");
-        $result  = [];
+        $response = $this->get(Context::Reseller, "/CMD_API_PACKAGES_USER");
+        $result   = [];
         
-        if (!empty($request) && empty($request["error"])) {
-            foreach ($request["list"] as $name) {
-                $package  = $this->adapter->query("/CMD_API_PACKAGES_USER", [ "package" => $name ]);
-                $result[] = [
-                    "name"      => $name,
-                    "storage"   => $package["quota"],
-                    "bandwidth" => $package["bandwidth"],
-                    "dbs"       => $package["mysql"],
-                ];
-            }
+        foreach ($response->list as $name) {
+            $package  = $this->get(Context::Reseller, "/CMD_API_PACKAGES_USER", [ "package" => $name ]);
+            $result[] = [
+                "name"      => $name,
+                "storage"   => $package->data["quota"],
+                "bandwidth" => $package->data["bandwidth"],
+                "dbs"       => $package->data["mysql"],
+            ];
         }
         return $result;
     }
@@ -50,10 +38,10 @@ class Package {
      * @param integer $storage
      * @param integer $bandwidth
      * @param integer $databases
-     * @return array|null
+     * @return Response
      */
-    public function editUsers($name, $storage, $bandwidth, $databases) {
-        return $this->adapter->query("/CMD_API_MANAGE_USER_PACKAGES", [
+    public function editUsers(string $name, int $storage, int $bandwidth, int $databases): Response {
+        return $this->post(Context::Reseller, "/CMD_API_MANAGE_USER_PACKAGES", [
             "add"              => "Save",
             "packagename"      => $name,
             "bandwidth"        => $bandwidth,
@@ -86,10 +74,10 @@ class Package {
     /**
      * Deletes the given User Package
      * @param string $name
-     * @return array|null
+     * @return Response
      */
-    public function deleteUsers($name) {
-        return $this->adapter->query("/CMD_API_MANAGE_USER_PACKAGES", [
+    public function deleteUsers(string $name): Response {
+        return $this->post(Context::Reseller, "/CMD_API_MANAGE_USER_PACKAGES", [
             "delete"  => "Delete",
             "delete0" => $name,
         ]);
@@ -104,10 +92,10 @@ class Package {
      * @param integer $storage
      * @param integer $bandwidth
      * @param integer $databases
-     * @return array|null
+     * @return Response
      */
-    public function editResellers($name, $domains, $storage, $bandwidth, $databases) {
-        return $this->adapter->query("/CMD_API_MANAGE_RESELLER_PACKAGES", [
+    public function editResellers(string $name, int $domains, int $storage, int $bandwidth, int $databases): Response {
+        return $this->post(Context::Admin, "/CMD_API_MANAGE_RESELLER_PACKAGES", [
             "add"          => "Save",
             "packagename"  => $name,
             "bandwidth"    => $bandwidth,
@@ -141,10 +129,10 @@ class Package {
     /**
      * Deletes the given Reseller Package
      * @param string $name
-     * @return array|null
+     * @return Response
      */
-    public function deleteResellers($name) {
-        return $this->adapter->query("/CMD_API_MANAGE_RESELLER_PACKAGES", [
+    public function deleteResellers(string $name): Response {
+        return $this->post(Context::Admin, "/CMD_API_MANAGE_RESELLER_PACKAGES", [
             "delete"  => "Delete",
             "delete0" => $name,
         ]);
