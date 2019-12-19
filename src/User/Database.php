@@ -1,32 +1,21 @@
 <?php
 namespace DirectAdmin\User;
 
+use DirectAdmin\Context;
 use DirectAdmin\Adapter;
 use DirectAdmin\Response;
 
 /**
  * The User Databases
  */
-class Database {
-    
-    private $adapter;
-    
-    /**
-     * Creates a new Database instance
-     * @param Adapter $adapter
-     */
-    public function __construct(Adapter $adapter) {
-        $this->adapter = $adapter;
-    }
-    
-    
+class Database extends Adapter {
     
     /**
      * Returns a list of Databases. Requires user login
      * @return string[]
      */
     public function getAll(): array {
-        $response = $this->adapter->get("/CMD_API_DATABASES");
+        $response = $this->get(Context::User, "/CMD_API_DATABASES");
         return $response->list;
     }
     
@@ -35,7 +24,7 @@ class Database {
      * @return array
      */
     public function getWithUsers(): array {
-        $response = $this->adapter->get("/CMD_API_DATABASES");
+        $response = $this->get(Context::User, "/CMD_API_DATABASES");
         $result   = [
             "data"  => [],
             "names" => [],
@@ -43,7 +32,7 @@ class Database {
         ];
         
         foreach ($response->list as $index => $name) {
-            $users = $this->adapter->get("/CMD_API_DB_USER", [ "name" => $name ]);
+            $users = $this->get(Context::User, "/CMD_API_DB_USER", [ "name" => $name ]);
             array_shift($users->list);
             
             $result["data"][$index] = [
@@ -67,7 +56,7 @@ class Database {
      * @return Response
      */
     public function create(string $name, string $user, string $password): Response {
-        return $this->adapter->post("/CMD_API_DATABASES", [
+        return $this->post(Context::User, "/CMD_API_DATABASES", [
             "action"  => "create",
             "name"    => $name,
             "user"    => $user,
@@ -82,7 +71,7 @@ class Database {
      * @return Response
      */
     public function delete(string $name): Response {
-        return $this->adapter->post("/CMD_API_DATABASES", [
+        return $this->post(Context::User, "/CMD_API_DATABASES", [
             "action"  => "delete",
             "select0" => $name,
         ]);
@@ -98,7 +87,7 @@ class Database {
      * @return Response
      */
     public function createUser(string $name, string $user, string $password): Response {
-        return $this->adapter->post("/CMD_API_DB_USER", [
+        return $this->post(Context::User, "/CMD_API_DB_USER", [
             "action"  => "create",
             "name"    => $name,
             "user"    => $user,
@@ -115,7 +104,7 @@ class Database {
      * @return Response
      */
     public function editUser(string $name, string $user, string $password): Response {
-        return $this->adapter->post("/CMD_API_DB_USER", [
+        return $this->post(Context::User, "/CMD_API_DB_USER", [
             "action"  => "modify",
             "name"    => $name,
             "user"    => $user,
@@ -131,7 +120,7 @@ class Database {
      * @return Response
      */
     public function deleteUser(string $name, string $user): Response {
-        return $this->adapter->post("/CMD_API_DB_USER", [
+        return $this->post(Context::User, "/CMD_API_DB_USER", [
             "action"  => "delete",
             "name"    => $name,
             "select0" => $user,
@@ -147,7 +136,7 @@ class Database {
      * @return Response
      */
     public function createHost(string $db, string $host): Response {
-        return $this->adapter->post("/CMD_API_DATABASES", [
+        return $this->post(Context::User, "/CMD_API_DATABASES", [
             "action" => "accesshosts",
             "create" => "yes",
             "db"     => $db,
@@ -162,7 +151,7 @@ class Database {
      * @return Response
      */
     public function deleteHost(string $db, string $host): Response {
-        return $this->adapter->post("/CMD_API_DATABASES", [
+        return $this->post(Context::User, "/CMD_API_DATABASES", [
             "action"  => "accesshosts",
             "delete"  => "yes",
             "db"      => $db,

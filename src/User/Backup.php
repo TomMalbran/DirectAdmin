@@ -1,34 +1,21 @@
 <?php
 namespace DirectAdmin\User;
 
+use DirectAdmin\Context;
 use DirectAdmin\Adapter;
 use DirectAdmin\Response;
 
 /**
  * The User Backups
  */
-class Backup {
-    
-    private $adapter;
-    
-    /**
-     * Creates a new Backup instance
-     * @param Adapter $adapter
-     */
-    public function __construct(Adapter $adapter) {
-        $this->adapter = $adapter;
-    }
-    
-    
+class Backup extends Adapter {
 
     /**
      * Returns the list of Backups. Requires user login
      * @return string[]
      */
     public function getAll(): array {
-        $response = $this->adapter->get("/CMD_API_SITE_BACKUP", [
-            "domain" => $this->adapter->getDomain(),
-        ]);
+        $response = $this->get(Context::User, "/CMD_API_SITE_BACKUP");
         return $response->list;
     }
     
@@ -39,9 +26,8 @@ class Backup {
      * @return Response
      */
     public function create(): Response {
-        return $this->adapter->post("/CMD_API_SITE_BACKUP", [
+        return $this->post(Context::User, "/CMD_API_SITE_BACKUP", [
             "action"          => "backup",
-            "domain"          => $this->adapter->getDomain(),
             "select0"         => "domain",
             "select1"         => "subdomain",
             "select2"         => "email",
@@ -63,9 +49,8 @@ class Backup {
      * @return Response
      */
     public function restore(string $name): Response {
-        $response = $this->adapter->get("/CMD_API_SITE_BACKUP", [
+        $response = $this->get(Context::User, "/CMD_API_SITE_BACKUP", [
             "action" => "view",
-            "domain" => $this->adapter->getDomain(),
             "file"   => $name,
         ]);
         if ($response->hasError) {
@@ -80,6 +65,6 @@ class Backup {
         foreach ($response->data as $index => $value) {
             $fields["select$index"] = $value;
         }
-        return $this->adapter->post("/CMD_API_SITE_BACKUP", $fields);
+        return $this->post(Context::User, "/CMD_API_SITE_BACKUP", $fields);
     }
 }
