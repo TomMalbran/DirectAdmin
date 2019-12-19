@@ -9,8 +9,7 @@
     ],
     "require": {
         "php": "^7.1",
-        "ext-curl": "*",
-        "directadmin/directadmin": "dev-master"
+        "ext-curl": "*"
     },
     "autoload": {
         "psr-4": {
