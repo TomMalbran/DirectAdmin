@@ -93,6 +93,17 @@ class DirectAdmin {
     }
 
     /**
+     * Returns the Public Path
+     * @param string $path
+     * @return string
+     */
+    public function getPublicPath(string $path): string {
+        return $this->context->getPublicPath($path);
+    }
+
+    
+
+    /**
      * Sets the Reseller for the Context
      * @param string $reseller
      * @return void
