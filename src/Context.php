@@ -92,11 +92,12 @@ class Context {
     }
 
     /**
-     * Returns the Public path
+     * Returns the Public Path
      * @param string $path
      * @return string
      */
     public function getPublicPath(string $path): string {
+        $path = str_replace("/public_html/", "", $path);
         if (!empty($this->domain)) {
             return "/domains/{$this->domain}/public_html/$path";
         }
