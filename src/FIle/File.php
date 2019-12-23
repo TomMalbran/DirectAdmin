@@ -16,7 +16,8 @@ class File extends Adapter {
      * @return array
      */
     public function getAll(string $path): array {
-        $response = $this->get(Context::User, "/CMD_API_FILE_MANAGER", [ "path" => $path ]);
+        $fullPath = $this->context->getPublicPath($path);
+        $response = $this->get(Context::User, "/CMD_API_FILE_MANAGER", [ "path" => $fullPath ]);
         $parent   = str_replace(".", "_", substr($path, 0, strrpos($path, "/")));
         $result   = [];
         
