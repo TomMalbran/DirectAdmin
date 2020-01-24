@@ -99,7 +99,7 @@ class Adapter {
      * @param string $filePath
      * @param string $user
      * @param string $password
-     * @return string
+     * @return Response
      */
     protected function uploadFile(string $path, string $fileName, string $filePath, string $user, string $password): string {
         [ $result, $error, $errno ] = $this->execute([
@@ -111,11 +111,10 @@ class Adapter {
             CURLOPT_INFILESIZE => filesize($filePath),
         ]);
         
-        // print("$url $userpwd ($errno) $error");
         if (!empty($errno)) {
-            return "$errno $error";
+            return Response::error("CURL ERROR: $errno $error");
         }
-        return "";
+        return Response::parse($result);
     }
 
     /**

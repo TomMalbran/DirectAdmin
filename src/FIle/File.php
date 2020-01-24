@@ -80,7 +80,7 @@ class File extends Adapter {
      * @param string $filePath
      * @param string $username
      * @param string $password
-     * @return string
+     * @return Response
      */
     public function upload(string $path, string $fileName, string $filePath, string $username, string $password): string {
         return $this->uploadFile($path, $fileName, $filePath, $username, $password);
@@ -93,7 +93,7 @@ class File extends Adapter {
      * @param string $fileName
      * @param string $filePath
      * @param string $password
-     * @return string
+     * @return Response
      */
     public function uploadFTP(string $username, string $path, string $fileName, string $filePath, string $password): string {
         $ftp      = "kappa";
@@ -293,7 +293,6 @@ class File extends Adapter {
     public function delete(string $path, $files): Response {
         $fields = $this->createFields([
             "button" => "delete",
-            "chmod"  => $chmod,
         ], $path, $files);
         return $this->post(Context::User, "/CMD_API_FILE_MANAGER", $fields);
     }
@@ -308,8 +307,7 @@ class File extends Adapter {
      */
     public function addToClipboard(string $path, $files): Response {
         $fields = $this->createFields([
-            "add"   => "clipboard",
-            "chmod" => $chmod,
+            "add" => "clipboard",
         ], $path, $files);
         return $this->post(Context::User, "/CMD_API_FILE_MANAGER", $fields);
     }

@@ -80,4 +80,16 @@ class Response {
             "text"  => $error,
         ]);
     }
+
+    /**
+     * Creates a Success Response
+     * @param string $success
+     * @return Response
+     */
+    public static function success(string $success): Response {
+        return new Response([
+            "error" => 0,
+            "text"  => $success,
+        ]);
+    }
 }
