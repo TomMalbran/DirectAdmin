@@ -58,13 +58,14 @@ class File extends Adapter {
     
     /**
      * Edits/Creates the given File. Requires user login
-     * @param string $path
-     * @param string $name
-     * @param string $text
+     * @param string          $path
+     * @param string          $name
+     * @param string|string[] $content
      * @return Response
      */
-    public function edit(string $path, string $name, string $text): Response {
+    public function edit(string $path, string $name, $content): Response {
         $fullPath = $this->context->getPublicPath($path);
+        $text     = is_array($content) ? implode("\n", $content) : $content;
         return $this->post(Context::User, "/CMD_API_FILE_MANAGER", [
             "action"   => "edit",
             "path"     => $fullPath,
