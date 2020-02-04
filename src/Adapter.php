@@ -21,39 +21,42 @@ class Adapter {
 
     /**
      * Does a get query to the server
-     * @param string $context
-     * @param string $endPoint
-     * @param array  $params   Optional.
+     * @param string  $context
+     * @param string  $endPoint
+     * @param array   $params   Optional.
+     * @param boolean $isJSON   Optional.
      * @return Response
      */
-    protected function get(string $context, string $endPoint, array $params = []): Response {
-        return $this->query($context, $endPoint, $params, "GET");
+    protected function get(string $context, string $endPoint, array $params = [], bool $isJSON = false): Response {
+        return $this->query($context, $endPoint, $params, "GET", $isJSON);
     }
 
     /**
      * Does a post query to the server
-     * @param string $context
-     * @param string $endPoint
-     * @param array  $params   Optional.
+     * @param string  $context
+     * @param string  $endPoint
+     * @param array   $params   Optional.
+     * @param boolean $isJSON   Optional.
      * @return Response
      */
-    protected function post(string $context, string $endPoint, array $params = []): Response {
-        return $this->query($context, $endPoint, $params, "POST");
+    protected function post(string $context, string $endPoint, array $params = [], bool $isJSON = false): Response {
+        return $this->query($context, $endPoint, $params, "POST", $isJSON);
     }
 
     /**
      * Does a query to the server
-     * @param string $context
-     * @param string $endPoint
-     * @param array  $params
-     * @param string $method
+     * @param string  $context
+     * @param string  $endPoint
+     * @param array   $params
+     * @param string  $method
+     * @param boolean $isJSON
      * @return Response
      */
-    private function query(string $context, string $endPoint, array $params, string $method): Response {
-        $userpwd = $this->context->getUsrpwd($context);
+    private function query(string $context, string $endPoint, array $params, string $method, bool $isJSON): Response {
+        $userpwd = $this->context->getUserpwd($context);
         $url     = $this->context->getUrl($endPoint);
         $params  = $this->context->addParams($context, $params);
-
+        
         if ($method == "GET") {
             $url .= "?" . http_build_query($params);
         }
@@ -75,17 +78,21 @@ class Adapter {
         if ($method == "POST") {
             $options += [
                 CURLOPT_POST       => 1,
-                CURLOPT_POSTFIELDS => $params,
+                CURLOPT_POSTFIELDS => http_build_query($params),
             ];
         }
 
-        // Execute the query
+        // Execute the query and parse the Result
         [ $result, $error, $errno ] = $this->execute($options);
+        
         if (!empty($error)) {
             return Response::error("CURL ERROR: $error");
         }
         if (!empty($result) && strpos($result, "<title>DirectAdmin Login</title>") !== false) {
             return Response::error("WRONG USERNAME OR PASSWORD");
+        }
+        if ($isJSON) {
+            return Response::parseJSON($result);
         }
         return Response::parse($result);
     }
@@ -101,7 +108,7 @@ class Adapter {
      * @param string $password
      * @return Response
      */
-    protected function uploadFile(string $path, string $fileName, string $filePath, string $user, string $password): string {
+    protected function uploadFile(string $path, string $fileName, string $filePath, string $user, string $password): Response {
         [ $result, $error, $errno ] = $this->execute([
             CURLOPT_URL        => $this->context->getFtp($path, $fileName),
             CURLOPT_USERPWD    => "{$user}:{$password}",

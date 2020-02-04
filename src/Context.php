@@ -6,9 +6,9 @@ namespace DirectAdmin;
  */
 class Context {
 
-    const User     = "user";
-    const Reseller = "reseller";
     const Admin    = "admin";
+    const Reseller = "reseller";
+    const User     = "user";
     
     
     public $host;
@@ -81,7 +81,7 @@ class Context {
      * @param string $context
      * @return string
      */
-    public function getUsrpwd(string $context): string {
+    public function getUserpwd(string $context): string {
         $user = $this->username;
         if ($context == self::User && !empty($this->user)) {
             $user = "{$this->username}|{$this->user}";

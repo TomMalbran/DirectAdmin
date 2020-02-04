@@ -70,6 +70,19 @@ class Response {
     }
 
     /**
+     * Creates a Parsed JSON Response
+     * @param string $raw
+     * @return Response
+     */
+    public static function parseJSON(string $raw): Response {
+        if (empty($raw)) {
+            return new Response();
+        }
+        $parsed = json_decode($raw, true);
+        return new Response($parsed, $raw);
+    }
+
+    /**
      * Creates an Error Response
      * @param string $error
      * @return Response
