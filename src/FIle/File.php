@@ -53,6 +53,26 @@ class File extends Adapter {
             "path"   => "$fullPath/$name",
         ]);
     }
+
+    /**
+     * Returns the Contents of the given File. Requires user login
+     * @param string $path
+     * @param string $name
+     * @return string
+     */
+    public function getContents(string $path, string $name): string {
+        $fullPath = $this->context->getPublicPath($path);
+        $response = $this->get(Context::User, "/CMD_FILE_MANAGER", [
+            "action" => "edit",
+            "path"   => "$fullPath/$name",
+            "json"   => "yes",
+        ], true);
+
+        if (!$response->hasError) {
+            return $response->data["TEXT"];
+        }
+        return "";
+    }
     
 
     
@@ -75,29 +95,29 @@ class File extends Adapter {
     }
     
     /**
-     * Uploads a File to the server creating an FTP user
+     * Uploads a File to the Server. Requires user login
      * @param string $path
      * @param string $fileName
      * @param string $filePath
-     * @param string $username
      * @param string $password
      * @return Response
      */
-    public function upload(string $path, string $fileName, string $filePath, string $username, string $password): string {
+    public function upload(string $path, string $fileName, string $filePath, string $password): Response {
+        $username = $this->context->user;
         return $this->uploadFile($path, $fileName, $filePath, $username, $password);
     }
 
     /**
-     * Uploads a File to the server creating an FTP user
-     * @param string $username
+     * Uploads a File to the Server creating an FTP user. Requires user login
      * @param string $path
      * @param string $fileName
      * @param string $filePath
      * @param string $password
      * @return Response
      */
-    public function uploadFTP(string $username, string $path, string $fileName, string $filePath, string $password): string {
-        $ftp      = "kappa";
+    public function uploadFTP(string $path, string $fileName, string $filePath, string $password): Response {
+        $ftp      = "ftp";
+        $username = $this->context->user;
         $domain   = $this->context->domain;
         $response = $this->get(Context::User, "/CMD_API_FTP");
         $pdom     = "@" . str_replace(".", "_", $domain);
@@ -138,35 +158,6 @@ class File extends Adapter {
     }
     
     /**
-     * Returns the contents of the given File. Requires user login
-     * @param string $path
-     * @param string $file
-     * @return string
-     */
-    public function download(string $path, string $file): string {
-        $response = $this->get(Context::User, "/CMD_FILE_MANAGER", [
-            "path" => "$path/$file",
-        ]);
-        return $response->raw;
-    }
-    
-    /**
-     * Extracts the given File. Requires user login
-     * @param string $path
-     * @param string $file
-     * @return Response
-     */
-    public function extract(string $path, string $file): Response {
-        $fullPath = $this->context->getPublicPath($path);
-        return $this->post(Context::User, "/CMD_API_FILE_MANAGER", [
-            "action"    => "extract",
-            "path"      => "$fullPath/$file",
-            "directory" => $fullPath,
-            "page"      => 2,
-        ]);
-    }
-    
-    /**
      * Renames a File/Directory from the old name to the new one. Requires user login
      * @param string  $path
      * @param string  $oldName
@@ -184,7 +175,7 @@ class File extends Adapter {
             "overwrite" => $overwrite ? "yes" : "no",
         ]);
     }
-    
+
     /**
      * Copies a File/Directory from the old name to the new one. Requires user login
      * @param string  $path
@@ -203,18 +194,34 @@ class File extends Adapter {
             "overwrite" => $overwrite ? "yes" : "no",
         ]);
     }
-    
+
     /**
-     * Resets a File's/Directory's owner. Requires user login
+     * Extracts the given File. Requires user login
      * @param string $path
-     * @param string $file
+     * @param string $name
      * @return Response
      */
-    public function resetOwner(string $path, string $file): Response {
+    public function extract(string $path, string $name): Response {
+        $fullPath = $this->context->getPublicPath($path);
+        return $this->post(Context::User, "/CMD_API_FILE_MANAGER", [
+            "action"    => "extract",
+            "path"      => "$fullPath/$name",
+            "directory" => $fullPath,
+            "page"      => 2,
+        ]);
+    }
+    
+    /**
+     * Resets a File/Directory Owner. Requires user login
+     * @param string $path
+     * @param string $name
+     * @return Response
+     */
+    public function resetOwner(string $path, string $name): Response {
         $fullPath = $this->context->getPublicPath($path);
         return $this->post(Context::User, "/CMD_API_FILE_MANAGER", [
             "action" => "resetowner",
-            "path"   => "$fullPath/$file",
+            "path"   => "$fullPath/$name",
         ]);
     }
     
