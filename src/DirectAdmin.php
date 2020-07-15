@@ -94,10 +94,10 @@ class DirectAdmin {
 
     /**
      * Returns the Public Path
-     * @param string $path
+     * @param string $path Optional.
      * @return string
      */
-    public function getPublicPath(string $path): string {
+    public function getPublicPath(string $path = ""): string {
         return $this->context->getPublicPath($path);
     }
 
