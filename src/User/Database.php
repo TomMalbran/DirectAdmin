@@ -9,7 +9,7 @@ use DirectAdmin\Response;
  * The User Databases
  */
 class Database extends Adapter {
-    
+
     /**
      * Returns a list of Databases. Requires user login
      * @return string[]
@@ -18,7 +18,7 @@ class Database extends Adapter {
         $response = $this->get(Context::User, "/CMD_API_DATABASES");
         return $response->list;
     }
-    
+
     /**
      * Returns a list of Databases with Users. Requires user login
      * @return array
@@ -30,11 +30,11 @@ class Database extends Adapter {
             "names" => [],
             "users" => [],
         ];
-        
+
         foreach ($response->list as $index => $name) {
             $users = $this->get(Context::User, "/CMD_API_DB_USER", [ "name" => $name ]);
             array_shift($users->list);
-            
+
             $result["data"][$index] = [
                 "index" => $index,
                 "name"  => $name,
@@ -45,9 +45,9 @@ class Database extends Adapter {
         }
         return $result;
     }
-    
-    
-    
+
+
+
     /**
      * Creates a new Database with the given name and user. Requires user login
      * @param string $name
@@ -64,7 +64,7 @@ class Database extends Adapter {
             "passwd2" => $password,
         ]);
     }
-    
+
     /**
      * Deletes the Database with the given name. Requires user login
      * @param string $name
@@ -76,9 +76,9 @@ class Database extends Adapter {
             "select0" => $name,
         ]);
     }
-    
-    
-    
+
+
+
     /**
      * Creates a Database User. Requires user login
      * @param string $name
@@ -95,7 +95,7 @@ class Database extends Adapter {
             "passwd2" => $password,
         ]);
     }
-    
+
     /**
      * Edits a Database User. Requires user login
      * @param string $name
@@ -112,7 +112,7 @@ class Database extends Adapter {
             "passwd2" => $password,
         ]);
     }
-    
+
     /**
      * Deletes the given Database User. Requires user login
      * @param string $name
@@ -126,9 +126,9 @@ class Database extends Adapter {
             "select0" => $user,
         ]);
     }
-    
-    
-    
+
+
+
     /**
      * Creates a new Access Host. Requires user login
      * @param string $db
@@ -143,7 +143,7 @@ class Database extends Adapter {
             "host"   => $host,
         ]);
     }
-    
+
     /**
      * Deletes an Access Host. Requires user login
      * @param string $db

@@ -9,7 +9,7 @@ use DirectAdmin\Result;
  * The Login Keys
  */
 class LoginKey extends Adapter {
-    
+
     /**
      * Creates a new Login Key
      * @param string $key
@@ -68,7 +68,7 @@ class LoginKey extends Adapter {
     }
 
 
-    
+
     /**
      * Deletes the Login Key
      * @param string $keyname

@@ -19,7 +19,7 @@ class PHPConfig extends Adapter {
         $domain   = $this->context->domain;
         $domain   = str_replace(".", "_", $domain);
         $result   = [];
-        
+
         $result = [
             "safeMode"    => false,
             "openBasedir" => false,
@@ -32,8 +32,8 @@ class PHPConfig extends Adapter {
         }
         return $response;
     }
-    
-    
+
+
 
     /**
      * Activates/Deactivates PHP Safe Mode
@@ -52,7 +52,7 @@ class PHPConfig extends Adapter {
         }
         return $this->post(Context::User, "/CMD_API_PHP_SAFE_MODE", $fields);
     }
-    
+
     /**
      * Activates/Deactivates PHP Open Basedir
      * @param boolean $enable Optional.

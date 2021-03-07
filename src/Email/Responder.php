@@ -9,7 +9,7 @@ use DirectAdmin\Response;
  * The Email Responders
  */
 class Responder extends Adapter {
-    
+
     /**
      * Returns a list with all the Email Autoresponders. Requires user login
      * @return array
@@ -23,7 +23,7 @@ class Responder extends Adapter {
             $data = $this->get(Context::User, "/CMD_API_EMAIL_AUTORESPONDER_MODIFY", [
                 "user" => $user,
             ]);
-            
+
             $result[] = [
                 "index" => $index,
                 "user"  => $user,
@@ -43,9 +43,9 @@ class Responder extends Adapter {
         $response = $this->get(Context::User, "/CMD_API_EMAIL_AUTORESPONDER");
         return $response->keys;
     }
-    
-    
-    
+
+
+
     /**
      * Creates an Email Autoresponder. Requires user login
      * @param string $user
@@ -57,7 +57,7 @@ class Responder extends Adapter {
         $fields = $this->createFields("create", $user, $text, $cc);
         return $this->post(Context::User, "/CMD_API_EMAIL_AUTORESPONDER", $fields);
     }
-    
+
     /**
      * Edits an Email Autoresponder. Requires user login
      * @param string $user
@@ -69,7 +69,7 @@ class Responder extends Adapter {
         $fields = $this->createFields("modify", $user, $text, $cc);
         return $this->post(Context::User, "/CMD_API_EMAIL_AUTORESPONDER", $fields);
     }
-    
+
     /**
      * Returns the fields to create or edit an Email Autoresponder
      * @param string $action
@@ -92,9 +92,9 @@ class Responder extends Adapter {
         }
         return $fields;
     }
-    
-    
-    
+
+
+
     /**
      * Deletes the Email Autoresponder with the given user in the given domain. Requires user login
      * @param string $user

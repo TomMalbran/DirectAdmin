@@ -18,8 +18,8 @@ class Transfer extends Adapter {
         $response = $this->post(Context::User, "/CMD_API_ADMIN_BACKUP");
         return $response->list;
     }
-    
-    
+
+
 
     /**
      * Creates a new Backup for the given user. Requires reseller login
@@ -35,7 +35,7 @@ class Transfer extends Adapter {
             "where"   => "local",
         ]);
     }
-    
+
     /**
      * Restores the given Backup. Requires reseller login
      * @param string $ipFrom

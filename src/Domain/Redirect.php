@@ -9,7 +9,7 @@ use DirectAdmin\Response;
  * The Server Redirects
  */
 class Redirect extends Adapter {
-    
+
     /**
      * Returns a list of Redirects. Requires user login
      * @return array
@@ -17,7 +17,7 @@ class Redirect extends Adapter {
     public function getAll(): array {
         $response = $this->get(Context::User, "/CMD_API_REDIRECT");
         $result   = [];
-        
+
         foreach ($response->data as $from => $to) {
             $result[] = [
                 "from" => $from,
@@ -26,9 +26,9 @@ class Redirect extends Adapter {
         }
         return $result;
     }
-    
-    
-    
+
+
+
     /**
      * Adds a new Redirect. Requires user login
      * @param string $from
@@ -42,7 +42,7 @@ class Redirect extends Adapter {
             "to"     => $to,
         ]);
     }
-    
+
     /**
      * Deletes the given Redirect. Requires user login
      * @param string $from

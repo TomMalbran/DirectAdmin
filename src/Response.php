@@ -5,7 +5,7 @@ namespace DirectAdmin;
  * The Adapter Response
  */
 class Response {
-    
+
     public $parsed   = [];
     public $raw      = "";
 
@@ -31,7 +31,7 @@ class Response {
             $this->hasError = !empty($parsed["error"]);
             $this->error    = !empty($parsed["text"])    ? $parsed["text"]    : "";
             $this->details  = !empty($parsed["details"]) ? $parsed["details"] : "";
-    
+
             if (!$this->hasError) {
                 $this->data = $parsed;
                 $this->keys = array_keys($parsed);
@@ -40,7 +40,7 @@ class Response {
         }
     }
 
-    
+
 
     /**
      * Creates a Parsed Response

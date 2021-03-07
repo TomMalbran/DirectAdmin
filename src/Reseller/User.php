@@ -28,7 +28,7 @@ class User extends Adapter {
     public function getInfo(string $user, string $domain): array {
         $fields = [ "bandwidth", "quota", "domainptr", "mysql", "nemailf", "nemailr", "nemails", "nsubdomains", "ftp" ];
         $usage  = $this->get(Context::Admin, "/CMD_API_SHOW_USER_USAGE", [ "user" => $user ]);
-        
+
         if ($usage->hasError) {
             $usage  = $this->get(Context::Admin, "/CMD_API_SHOW_USER_USAGE",  [ "domain" => $domain ]);
             $config = $this->get(Context::Admin, "/CMD_API_SHOW_USER_CONFIG", [ "domain" => $domain ]);
@@ -36,7 +36,7 @@ class User extends Adapter {
             $config = $this->get(Context::Admin, "/CMD_API_SHOW_USER_CONFIG", [ "user" => $user ]);
         }
         $result = [];
-        
+
         if (!$usage->hasError && !$config->hasError) {
             foreach ($fields as $field) {
                 if (isset($usage->data[$field]) && isset($config->data[$field])) {
@@ -47,7 +47,7 @@ class User extends Adapter {
                     ];
                 }
             }
-            
+
             if (!empty($result)) {
                 $result["dbQuota"]    = [ "used" => isset($usage->data["db_quota"])    ? (int)$usage->data["db_quota"]    : 0 ];
                 $result["emailQuota"] = [ "used" => isset($usage->data["email_quota"]) ? (int)$usage->data["email_quota"] : 0 ];
@@ -58,10 +58,10 @@ class User extends Adapter {
                 $result["bandwidth"]["additional"] = !empty($config->data["additional_bandwidth"]) ? (int)$config->data["additional_bandwidth"] : 0;
             }
         }
-        
+
         return $result;
     }
-    
+
     /**
      * Returns the users configuration
      * @param string $user
@@ -73,7 +73,7 @@ class User extends Adapter {
         ]);
         return $response->data;
     }
-    
+
     /**
      * Returns the main domain for the given user
      * @param string $user
@@ -90,7 +90,7 @@ class User extends Adapter {
     }
 
 
-    
+
     /**
      * Creates a new User
      * @param array $data
@@ -110,7 +110,7 @@ class User extends Adapter {
             "notify"   => "no",
         ]);
     }
-    
+
     /**
      * Deletes the given User
      * @param string $user
@@ -123,8 +123,8 @@ class User extends Adapter {
             "select0"   => $user,
         ]);
     }
-    
-    
+
+
 
     /**
      * Suspends or Unsuspends the given User Account
@@ -135,13 +135,13 @@ class User extends Adapter {
     public function suspend($user, bool $suspend = true): Response {
         $users  = is_array($user) ? $user : [ $user ];
         $fields = $suspend ? [ "dosuspend" => "Suspend" ] : [ "dounsuspend" => "Unsuspend" ];
-        
+
         foreach ($users as $index => $value) {
             $fields["select$index"] = $value;
         }
         return $this->post(Context::Admin, "/CMD_API_SELECT_USERS", $fields);
     }
-    
+
     /**
      * Moves the user from the current reseller to a new one
      * @param string $user
@@ -155,7 +155,7 @@ class User extends Adapter {
             "creator" => $reseller,
         ]);
     }
-    
+
     /**
      * Changes the User's Email
      * @param string $user
@@ -170,7 +170,7 @@ class User extends Adapter {
             "evalue" => $email,
         ]);
     }
-    
+
     /**
      * Changes the User's Username
      * @param string $user
@@ -185,7 +185,7 @@ class User extends Adapter {
             "nvalue" => $newName,
         ]);
     }
-    
+
     /**
      * Changes the User's Package
      * @param string $user
@@ -199,7 +199,7 @@ class User extends Adapter {
             "package" => $package,
         ]);
     }
-    
+
     /**
      * Changes the old Domain to the new Domain. Requires user login
      * @param string $oldDomain
@@ -212,7 +212,7 @@ class User extends Adapter {
             "new_domain" => $newDomain,
         ]);
     }
-    
+
     /**
      * Resets the given User's Password
      * @param string $user
@@ -226,7 +226,7 @@ class User extends Adapter {
             "passwd2"  => $password,
         ]);
     }
-    
+
     /**
      * Sets the User's Additional Bandwidth
      * @param string  $user

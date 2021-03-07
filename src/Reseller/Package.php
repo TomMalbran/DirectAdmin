@@ -9,7 +9,7 @@ use DirectAdmin\Result;
  * The Reseller Packages
  */
 class Package extends Adapter {
-    
+
     /**
      * Returns the list of users packages for the current Reseller
      * @return array
@@ -17,7 +17,7 @@ class Package extends Adapter {
     public function getUsers() {
         $response = $this->get(Context::Reseller, "/CMD_API_PACKAGES_USER");
         $result   = [];
-        
+
         foreach ($response->list as $name) {
             $package  = $this->get(Context::Reseller, "/CMD_API_PACKAGES_USER", [ "package" => $name ]);
             $result[] = [
@@ -29,7 +29,7 @@ class Package extends Adapter {
         }
         return $result;
     }
-    
+
 
 
     /**
@@ -70,7 +70,7 @@ class Package extends Adapter {
             "language"         => "en",
         ]);
     }
-    
+
     /**
      * Deletes the given User Package
      * @param string $name
@@ -82,8 +82,8 @@ class Package extends Adapter {
             "delete0" => $name,
         ]);
     }
-    
-    
+
+
 
     /**
      * Creates or Edits a User Package
@@ -125,7 +125,7 @@ class Package extends Adapter {
             "serverip"     => "ON",
         ]);
     }
-    
+
     /**
      * Deletes the given Reseller Package
      * @param string $name

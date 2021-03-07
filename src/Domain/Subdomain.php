@@ -9,7 +9,7 @@ use DirectAdmin\Response;
  * The Server Subdomains
  */
 class Subdomain extends Adapter {
-    
+
     /**
      * Returns a list of Subdomains. Requires user login
      * @return string[]
@@ -18,9 +18,9 @@ class Subdomain extends Adapter {
         $response = $this->get(Context::User, "/CMD_API_SUBDOMAINS");
         return $response->list;
     }
-    
-    
-    
+
+
+
     /**
      * Creates a new Subdomain. Requires user login
      * @param string $subdomain
@@ -32,7 +32,7 @@ class Subdomain extends Adapter {
             "subdomain" => $subdomain,
         ]);
     }
-    
+
     /**
      * Deletes the given Subdomain. Requires user login
      * @param string  $subdomain

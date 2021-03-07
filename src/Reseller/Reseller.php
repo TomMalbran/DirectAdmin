@@ -9,7 +9,7 @@ use DirectAdmin\Response;
  * The Reseller Accounts
  */
 class Reseller extends Adapter {
-    
+
     /**
      * Returns the list of Resellers for the current server
      * @return array
@@ -27,7 +27,7 @@ class Reseller extends Adapter {
     public function getInfo(string $user): array {
         $fields = [ "bandwidth", "quota", "domainptr", "mysql", "nemailf", "nemailr", "nemails", "nsubdomains", "vdomains" ];
         $config = $this->get(Context::Admin, "/CMD_API_RESELLER_STATS", [ "user" => $user ]);
-        
+
         if (!$config->hasError) {
             $usage     = $this->get(Context::Admin, "/CMD_API_RESELLER_STATS", [
                 "user" => $user,
@@ -39,7 +39,7 @@ class Reseller extends Adapter {
             ]);
         }
         $result = [];
-        
+
         foreach ($fields as $field) {
             if (isset($config->data[$field])) {
                 $result[$field] = [
@@ -49,11 +49,11 @@ class Reseller extends Adapter {
                 ];
             }
         }
-        
+
         return $result;
     }
-    
-    
+
+
 
     /**
      * Creates a new Reseller
@@ -74,7 +74,7 @@ class Reseller extends Adapter {
             "notify"   => "no",
         ]);
     }
-    
+
     /**
      * Creates a new Reseller account with the given username and password. Requires Admin login
      * @param string $user
@@ -121,7 +121,7 @@ class Reseller extends Adapter {
             "notify"       => "no",
         ]);
     }
-    
+
     /**
      * Changes the Resellers's Package
      * @param string $user

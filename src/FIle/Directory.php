@@ -9,7 +9,7 @@ use DirectAdmin\Response;
  * The Server Directories
  */
 class Directory extends Adapter {
-    
+
     /**
      * Returns the protections for the given Directory. Requires user login
      * @param string $path
@@ -22,7 +22,7 @@ class Directory extends Adapter {
             "action" => "protect",
             "path"   => "$fullPath/$name",
         ]);
-        
+
         if (!$response->error) {
             return new Response([
                 "text"      => $response->data["name"],
@@ -32,9 +32,9 @@ class Directory extends Adapter {
         }
         return $response;
     }
-    
 
-    
+
+
     /**
      * Makes a new Directory. Requires user login
      * @param string $path
@@ -75,7 +75,7 @@ class Directory extends Adapter {
         }
         return $this->post(Context::User, "/CMD_API_FILE_MANAGER", $fields);
     }
-    
+
     /**
      * Removes the protection from a Directory. Requires user login
      * @param string $path
@@ -93,7 +93,7 @@ class Directory extends Adapter {
         if ($response->hasError) {
             return $response;
         }
-        
+
         return $this->post(Context::User, "/CMD_API_FILE_MANAGER", [
             "action" => "protect",
             "path"   => "$fullPath/$name",

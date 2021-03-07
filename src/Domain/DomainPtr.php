@@ -9,7 +9,7 @@ use DirectAdmin\Response;
  * The Server Domain Pointers
  */
 class DomainPtr extends Adapter {
-    
+
     /**
      * Returns a list of Domain Pointers. Requires user login
      * @return array
@@ -17,7 +17,7 @@ class DomainPtr extends Adapter {
     public function getAll(): array {
         $response = $this->get(Context::User, "/CMD_API_DOMAIN_POINTER");
         $result   = [];
-        
+
         foreach ($response->data as $from => $alias) {
             $result[] = [
                 "name"    => str_replace("_", ".", $from),
@@ -26,9 +26,9 @@ class DomainPtr extends Adapter {
         }
         return $result;
     }
-    
-    
-    
+
+
+
     /**
      * Creates a new Domain Pointer. Requires user login
      * @param string  $from
@@ -45,7 +45,7 @@ class DomainPtr extends Adapter {
         }
         return $this->post(Context::User, "/CMD_API_DOMAIN_POINTER", $fields);
     }
-    
+
     /**
      * Deletes the given Domain Pointer. Requires user login
      * @param string $from

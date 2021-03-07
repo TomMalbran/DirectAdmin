@@ -9,8 +9,8 @@ class Context {
     const Admin    = "admin";
     const Reseller = "reseller";
     const User     = "user";
-    
-    
+
+
     public $host;
     public $port;
     public $username;
@@ -19,8 +19,8 @@ class Context {
     public $reseller;
     public $user;
     public $domain;
-    
-    
+
+
     /**
      * Creates a new Context instance
      * @param string  $host
@@ -34,7 +34,7 @@ class Context {
         $this->username = $username;
         $this->password = $password;
     }
-    
+
     /**
      * Sets the Reseller for the Context
      * @param string $reseller
@@ -54,8 +54,8 @@ class Context {
         $this->user   = $user;
         $this->domain = $domain;
     }
-    
-    
+
+
 
     /**
      * Returns the full Url

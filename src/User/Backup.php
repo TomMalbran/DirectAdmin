@@ -18,8 +18,8 @@ class Backup extends Adapter {
         $response = $this->get(Context::User, "/CMD_API_SITE_BACKUP");
         return $response->list;
     }
-    
-    
+
+
 
     /**
      * Creates a new Backup. Requires user login
@@ -42,7 +42,7 @@ class Backup extends Adapter {
             "supress_message" => 1,
         ]);
     }
-    
+
     /**
      * Restores the given Backup. Requires user login
      * @param string $name

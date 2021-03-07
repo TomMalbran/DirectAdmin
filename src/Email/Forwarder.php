@@ -9,7 +9,7 @@ use DirectAdmin\Response;
  * The Email Forwarders
  */
 class Forwarder extends Adapter {
-    
+
     /**
      * Returns a list with all the Email Forwarders. Requires user login
      * @return array
@@ -30,7 +30,7 @@ class Forwarder extends Adapter {
         }
         return $result;
     }
-    
+
     /**
      * Returns a list with all the Email Forwarders usernames. Requires user login
      * @return string[]
@@ -39,8 +39,8 @@ class Forwarder extends Adapter {
         $response = $this->get(Context::User, "/CMD_API_EMAIL_FORWARDERS");
         return $response->keys;
     }
-    
-    
+
+
     /**
      * Creates an Email Forwarder. Requires user login
      * @param string $user
@@ -54,7 +54,7 @@ class Forwarder extends Adapter {
             "email"  => $email,
         ]);
     }
-    
+
     /**
      * Edits an Email Forwarder. Requires user login
      * @param string $user
@@ -68,7 +68,7 @@ class Forwarder extends Adapter {
             "email"  => $email,
         ]);
     }
-    
+
     /**
      * Deletes the Email Forwarder with the given user in the given domain. Requires user login
      * @param string $user

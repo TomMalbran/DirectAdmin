@@ -9,7 +9,7 @@ use DirectAdmin\Response;
  * The Email Vacations
  */
 class Vacation extends Adapter {
-    
+
     /**
      * Returns a list with all the Vacations Messages. Requires user login
      * @return array
@@ -23,7 +23,7 @@ class Vacation extends Adapter {
             $data = $this->get(Context::User, "/CMD_API_EMAIL_VACATION_MODIFY", [
                 "user" => $user,
             ]);
-            
+
             $result[] = [
                 "index" => $index,
                 "user"  => $user,
@@ -41,9 +41,9 @@ class Vacation extends Adapter {
         $response = $this->get(Context::User, "/CMD_API_EMAIL_VACATION");
         return $response->keys;
     }
-    
-    
-    
+
+
+
     /**
      * Creates an Email Vacations Message. Requires user login
      * @param string  $user
@@ -57,7 +57,7 @@ class Vacation extends Adapter {
         $fields = $this->createFields("create", $user, $text, $fromTime, $toTime);
         return $this->post(Context::User, "/CMD_API_EMAIL_VACATION", $fields);
     }
-    
+
     /**
      * Edits an Email Vacations Message. Requires user login
      * @param string  $user
@@ -71,7 +71,7 @@ class Vacation extends Adapter {
         $fields = $this->getFields("modify", $user, $text, $fromTime, $toTime);
         return $this->post(Context::User, "/CMD_API_EMAIL_VACATION", $fields);
     }
-    
+
     /**
      * Returns the fields to create or edit an Email Vacations Message
      * @param string  $action
@@ -96,9 +96,9 @@ class Vacation extends Adapter {
             "endyear"    => date("Y", $toTime),
         ];
     }
-    
-    
-    
+
+
+
     /**
      * Deletes the Vacations Message with the given user in the given domain. Requires user login
      * @param string $user

@@ -19,7 +19,7 @@ class Account extends Adapter {
         $user   = $this->context->user;
         $domain = $this->context->domain;
         $usage  = $this->get(Context::Admin, "/CMD_API_SHOW_USER_USAGE", [ "user" => $user ]);
-        
+
         if ($usage->hasError) {
             $usage  = $this->get(Context::Admin, "/CMD_API_SHOW_USER_USAGE",  [ "domain" => $domain ]);
             $config = $this->get(Context::Admin, "/CMD_API_SHOW_USER_CONFIG", [ "domain" => $domain ]);
@@ -27,7 +27,7 @@ class Account extends Adapter {
             $config = $this->get(Context::Admin, "/CMD_API_SHOW_USER_CONFIG", [ "user" => $user ]);
         }
         $result = [];
-        
+
         if (!$usage->hasError && !$config->hasError) {
             foreach ($fields as $field) {
                 if (isset($usage->data[$field]) && isset($config->data[$field])) {
@@ -38,7 +38,7 @@ class Account extends Adapter {
                     ];
                 }
             }
-            
+
             if (!empty($result)) {
                 $result["dbQuota"]    = [ "used" => isset($usage->data["db_quota"])    ? (int)$usage->data["db_quota"]    : 0 ];
                 $result["emailQuota"] = [ "used" => isset($usage->data["email_quota"]) ? (int)$usage->data["email_quota"] : 0 ];
@@ -49,10 +49,10 @@ class Account extends Adapter {
                 $result["bandwidth"]["additional"] = !empty($config->data["additional_bandwidth"]) ? (int)$config->data["additional_bandwidth"] : 0;
             }
         }
-        
+
         return $result;
     }
-    
+
     /**
      * Returns the User's Configuration
      * @return array
@@ -63,7 +63,7 @@ class Account extends Adapter {
         ]);
         return $response->data;
     }
-    
+
     /**
      * Returns the User's Main Domain
      * @return string
@@ -79,7 +79,7 @@ class Account extends Adapter {
     }
 
 
-    
+
     /**
      * Suspends or Unsuspends the User
      * @param boolean $suspend Optional.
@@ -90,7 +90,7 @@ class Account extends Adapter {
         $fields["select0"] = $this->context->user;
         return $this->post(Context::Admin, "/CMD_API_SELECT_USERS", $fields);
     }
-    
+
     /**
      * Moves the User from the current reseller to a new one
      * @param string $reseller
@@ -103,7 +103,7 @@ class Account extends Adapter {
             "creator" => $reseller,
         ]);
     }
-    
+
     /**
      * Changes the User's Email
      * @param string $email
@@ -117,7 +117,7 @@ class Account extends Adapter {
             "evalue" => $email,
         ]);
     }
-    
+
     /**
      * Changes the User's Username
      * @param string $newName
@@ -131,7 +131,7 @@ class Account extends Adapter {
             "nvalue" => $newName,
         ]);
     }
-    
+
     /**
      * Changes the User's Package
      * @param string $package
@@ -144,7 +144,7 @@ class Account extends Adapter {
             "package" => $package,
         ]);
     }
-    
+
     /**
      * Changes the old Domain to the new Domain. Requires user login
      * @param string $domain
@@ -156,7 +156,7 @@ class Account extends Adapter {
             "new_domain" => $domain,
         ]);
     }
-    
+
     /**
      * Resets the given User's Password
      * @param string $password
@@ -169,7 +169,7 @@ class Account extends Adapter {
             "passwd2"  => $password,
         ]);
     }
-    
+
     /**
      * Sets the User's Additional Bandwidth
      * @param integer $amount
@@ -185,7 +185,7 @@ class Account extends Adapter {
     }
 
 
-    
+
     /**
      * Sets the Public Stats. Requires user login
      * @return Response
@@ -197,7 +197,7 @@ class Account extends Adapter {
             "select0" => $this->context->domain,
         ]);
     }
-    
+
     /**
      * Returns the contents of the Error Log File. Requires user login
      * @param integer $lines Optional.
@@ -231,7 +231,7 @@ class Account extends Adapter {
     public function getSpamConfig(): Response {
         return $this->post(Context::User, "/CMD_API_SPAMASSASSIN");
     }
-    
+
     /**
      * Sets the Spam Configuration. Requires user login
      * @param array $data

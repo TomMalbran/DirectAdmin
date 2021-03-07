@@ -9,7 +9,7 @@ use DirectAdmin\Result;
  * The Service Monitor
  */
 class Service extends Adapter {
-    
+
     /**
      * Returns the list with the status of all the services
      * @return array
@@ -18,8 +18,8 @@ class Service extends Adapter {
         $response = $this->get(Context::Admin, "/CMD_API_SHOW_SERVICES");
         return $response->data;
     }
-    
-    
+
+
 
     /**
      * Starts the given service
@@ -32,7 +32,7 @@ class Service extends Adapter {
             "service" => $service,
         ]);
     }
-    
+
     /**
      * Stops the given service
      * @param string $service
@@ -44,7 +44,7 @@ class Service extends Adapter {
             "service" => $service,
         ]);
     }
-    
+
     /**
      * Restarts the given service
      * @param string $service
@@ -56,7 +56,7 @@ class Service extends Adapter {
             "service" => $service,
         ]);
     }
-    
+
     /**
      * Reloads the given service
      * @param string $service
@@ -68,7 +68,7 @@ class Service extends Adapter {
             "service" => $service,
         ]);
     }
-    
+
     /**
      * Reboots the server
      * @param string $adminpass

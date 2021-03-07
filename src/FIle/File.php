@@ -9,7 +9,7 @@ use DirectAdmin\Response;
  * The Server Files
  */
 class File extends Adapter {
-    
+
     /**
      * Returns the data for the files and a list of them. Requires user login
      * @param string $path
@@ -20,7 +20,7 @@ class File extends Adapter {
         $response = $this->get(Context::User, "/CMD_API_FILE_MANAGER", [ "path" => $fullPath ]);
         $parent   = str_replace(".", "_", substr($path, 0, strrpos($path, "/")));
         $result   = [];
-        
+
         foreach ($response->data as $filePath => $fileData) {
             if ($filePath != $parent && $filePath != "/") {
                 $result[] = $fileData;
@@ -28,7 +28,7 @@ class File extends Adapter {
         }
         return $result;
     }
-    
+
     /**
      * Returns true if the given File/Directory exists. Requires user login
      * @param string $path
@@ -73,9 +73,9 @@ class File extends Adapter {
         }
         return "";
     }
-    
 
-    
+
+
     /**
      * Edits/Creates the given File. Requires user login
      * @param string          $path
@@ -93,7 +93,7 @@ class File extends Adapter {
             "filename" => $name,
         ]);
     }
-    
+
     /**
      * Uploads a File to the Server. Requires user login
      * @param string $path
@@ -121,11 +121,11 @@ class File extends Adapter {
         $domain   = $this->context->domain;
         $response = $this->get(Context::User, "/CMD_API_FTP");
         $pdom     = "@" . str_replace(".", "_", $domain);
-        
+
         if ($response->hasError) {
             return "";
         }
-        
+
         $index  = 0;
         $fields = [];
         foreach ($response->keys as $name) {
@@ -138,7 +138,7 @@ class File extends Adapter {
             $fields["action"] = "delete";
             $this->post(Context::User, "/CMD_API_FTP", $fields);
         }
-        
+
         $this->post(Context::User, "/CMD_API_FTP", [
             "action"     => "create",
             "user"       => $ftp,
@@ -148,15 +148,15 @@ class File extends Adapter {
             "passwd2"    => $password,
         ]);
         $result = $this->uploadFile($path, $fileName, $filePath, "$ftp@$domain", $password);
-        
+
         $this->post(Context::User, "/CMD_API_FTP", [
             "action"  => "delete",
             "select0" => $ftp,
         ]);
-        
+
         return $result;
     }
-    
+
     /**
      * Renames a File/Directory from the old name to the new one. Requires user login
      * @param string  $path
@@ -210,7 +210,7 @@ class File extends Adapter {
             "page"      => 2,
         ]);
     }
-    
+
     /**
      * Resets a File/Directory Owner. Requires user login
      * @param string $path
@@ -224,7 +224,7 @@ class File extends Adapter {
             "path"   => "$fullPath/$name",
         ]);
     }
-    
+
     /**
      * Sets the Permissions for the given Files/Directories. Requires user login
      * @param string          $path
@@ -239,7 +239,7 @@ class File extends Adapter {
         ], $path, $files);
         return $this->post(Context::User, "/CMD_API_FILE_MANAGER", $fields);
     }
-    
+
     /**
      * Moves the given Files/Directories from a path to another path. Requires user login
      * @param string          $fromPath
@@ -255,7 +255,7 @@ class File extends Adapter {
         }
         return $response;
     }
-    
+
     /**
      * Copies the given Files/Directories from a path to another path. Requires user login
      * @param string          $fromPath
@@ -271,7 +271,7 @@ class File extends Adapter {
         }
         return $response;
     }
-    
+
     /**
      * Compresses the given Files/Directories. Requires user login
      * @param string          $path
@@ -291,7 +291,7 @@ class File extends Adapter {
         }
         return $response;
     }
-    
+
     /**
      * Deletes the given Files/Directories. Requires user login
      * @param string          $path
@@ -304,9 +304,9 @@ class File extends Adapter {
         ], $path, $files);
         return $this->post(Context::User, "/CMD_API_FILE_MANAGER", $fields);
     }
-    
-    
-    
+
+
+
     /**
      * Adds the given Files/Directories to the clipboard. Requires user login
      * @param string          $path
@@ -319,7 +319,7 @@ class File extends Adapter {
         ], $path, $files);
         return $this->post(Context::User, "/CMD_API_FILE_MANAGER", $fields);
     }
-    
+
     /**
      * Moves/Copies/Deletes the Clipboard Files/Directories. Requires user login
      * @param string $action
@@ -346,7 +346,7 @@ class File extends Adapter {
 
         $fields["action"] = "multiple";
         $fields["path"]   = $fullPath;
-        
+
         $index = 0;
         foreach ($files as $file) {
             if (!empty($file)) {

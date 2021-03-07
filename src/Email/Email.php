@@ -9,7 +9,7 @@ use DirectAdmin\Response;
  * The Email Accounts
  */
 class Email extends Adapter {
-    
+
     /**
      * Returns a list with all the Email Accounts Data. Requires user login
      * @return array
@@ -18,7 +18,7 @@ class Email extends Adapter {
         $response = $this->get(Context::User, "/CMD_API_POP", [
             "action" => "full_list",
         ]);
-        
+
         $result = [];
         $index  = 0;
         foreach ($response->data as $user => $data) {
@@ -34,7 +34,7 @@ class Email extends Adapter {
         }
         return $result;
     }
-    
+
     /**
      * Returns a list with all the Email Accounts usernames. Requires user login
      * @return string[]
@@ -45,7 +45,7 @@ class Email extends Adapter {
         ]);
         return $response->list;
     }
-    
+
     /**
      * Returns the Quota information for the given Email Account. Requires user login
      * @param string $user
@@ -57,9 +57,9 @@ class Email extends Adapter {
             "user" => $user,
         ]);
     }
-    
-    
-    
+
+
+
     /**
      * Creates an Email Account. Requires user login
      * @param string  $user
@@ -73,7 +73,7 @@ class Email extends Adapter {
         ], $user, $password, $quota);
         return $this->post(Context::User, "/CMD_API_POP", $fields);
     }
-    
+
     /**
      * Edits an Email Account. Requires user login
      * @param string  $user
@@ -89,7 +89,7 @@ class Email extends Adapter {
         ], $user, $password, $quota);
         return $this->post(Context::User, "/CMD_API_POP", $fields);
     }
-    
+
     /**
      * Returns the fields to create or edit an Email Account
      * @param array   $fields
@@ -111,9 +111,9 @@ class Email extends Adapter {
         }
         return $fields;
     }
-    
-    
-    
+
+
+
     /**
      * Returns the contents of the outlook reg file. Requires user login
      * @param string $user
@@ -125,7 +125,7 @@ class Email extends Adapter {
         $response = $this->get(Context::User, "/CMD_EMAIL_REG/$domain/$email/$email/outlook_$user.reg");
         return $response->raw;
     }
-    
+
     /**
      * Suspends the Email Account with the given user in the given domain. Requires user login
      * @param string $user
@@ -138,7 +138,7 @@ class Email extends Adapter {
             "user"    => $user,
         ]);
     }
-    
+
     /**
      * Unsuspends the Email Account with the given user in the given domain. Requires user login
      * @param string $user
@@ -151,9 +151,9 @@ class Email extends Adapter {
             "user"      => $user,
         ]);
     }
-    
-    
-    
+
+
+
     /**
      * Deletes the Email Account with the given user in the given domain. Requires user login
      * @param string $user
@@ -166,7 +166,7 @@ class Email extends Adapter {
             "user"             => $user,
         ]);
     }
-    
+
     /**
      * Purges the Emails from the given domain. Requires user login
      * @param string[]|string $user
@@ -187,9 +187,9 @@ class Email extends Adapter {
         }
         return $this->post(Context::User, "/CMD_EMAIL_POP", $fields);
     }
-    
-    
-    
+
+
+
     /**
      * Enables/Disables the email local server. Requires user login
      * @param boolean $disable

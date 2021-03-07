@@ -5,10 +5,10 @@ namespace DirectAdmin;
  * The Adapter Class
  */
 class Adapter {
-    
+
     protected $context;
-    
-    
+
+
     /**
      * Creates a new Adapter instance
      * @param Context $context
@@ -16,7 +16,7 @@ class Adapter {
     public function __construct(Context $context) {
         $this->context = $context;
     }
-    
+
 
 
     /**
@@ -56,7 +56,7 @@ class Adapter {
         $userpwd = $this->context->getUserpwd($context);
         $url     = $this->context->getUrl($endPoint);
         $params  = $this->context->addParams($context, $params);
-        
+
         if ($method == "GET") {
             $url .= "?" . http_build_query($params);
         }
@@ -84,7 +84,7 @@ class Adapter {
 
         // Execute the query and parse the Result
         [ $result, $error, $errno ] = $this->execute($options);
-        
+
         if (!empty($error)) {
             return Response::error("CURL ERROR: $error");
         }
@@ -98,7 +98,7 @@ class Adapter {
     }
 
 
-    
+
     /**
      * Uploads a File using FTP
      * @param string $path
@@ -117,7 +117,7 @@ class Adapter {
             CURLOPT_INFILE     => fopen($filePath, "r"),
             CURLOPT_INFILESIZE => filesize($filePath),
         ]);
-        
+
         if (!empty($errno)) {
             return Response::error("CURL ERROR: $errno $error");
         }
