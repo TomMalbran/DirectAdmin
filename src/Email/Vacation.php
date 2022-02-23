@@ -54,7 +54,7 @@ class Vacation extends Adapter {
      * @return Response
      */
     public function create(string $user, string $text, int $fromTime, int $toTime, bool $isEdit): Response {
-        $fields = $this->createFields("create", $user, $text, $fromTime, $toTime);
+        $fields = $this->getFields("create", $user, $text, $fromTime, $toTime);
         return $this->post(Context::User, "/CMD_API_EMAIL_VACATION", $fields);
     }
 

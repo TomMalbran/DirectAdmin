@@ -30,7 +30,7 @@ class PHPConfig extends Adapter {
                 "openBasedir" => $response->data["open_basedir"] == "ON",
             ];
         }
-        return $response;
+        return $result;
     }
 
 

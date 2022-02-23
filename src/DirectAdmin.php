@@ -81,7 +81,7 @@ class DirectAdmin {
      * @return string
      */
     public function getHost(): string {
-        return $this->context->getHost();
+        return $this->context->host;
     }
 
     /**
@@ -89,7 +89,7 @@ class DirectAdmin {
      * @return integer
      */
     public function getPort(): int {
-        return $this->context->getPort();
+        return $this->context->port;
     }
 
     /**

@@ -3,7 +3,7 @@ namespace DirectAdmin\Admin;
 
 use DirectAdmin\Context;
 use DirectAdmin\Adapter;
-use DirectAdmin\Result;
+use DirectAdmin\Response;
 
 /**
  * The Login Keys

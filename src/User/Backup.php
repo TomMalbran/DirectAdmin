@@ -59,7 +59,6 @@ class Backup extends Adapter {
 
         $fields = [
             "action" => "restore",
-            "domain" => $domain,
             "file"   => $name,
         ];
         foreach ($response->data as $index => $value) {

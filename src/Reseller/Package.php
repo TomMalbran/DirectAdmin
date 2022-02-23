@@ -3,7 +3,7 @@ namespace DirectAdmin\Reseller;
 
 use DirectAdmin\Context;
 use DirectAdmin\Adapter;
-use DirectAdmin\Result;
+use DirectAdmin\Response;
 
 /**
  * The Reseller Packages
