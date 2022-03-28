@@ -15,6 +15,7 @@ class Context {
     public $port;
     public $username;
     public $password;
+    public $ip;
 
     public $reseller;
     public $user;
@@ -27,12 +28,14 @@ class Context {
      * @param integer $port
      * @param string  $username
      * @param string  $password
+     * @param string  $ip       Optional.
      */
-    public function __construct(string $host, int $port, string $username, string $password) {
+    public function __construct(string $host, int $port, string $username, string $password, string $ip = "") {
         $this->host     = $host;
         $this->port     = $port;
         $this->username = $username;
         $this->password = $password;
+        $this->ip       = $ip;
     }
 
     /**

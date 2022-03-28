@@ -42,9 +42,10 @@ class DirectAdmin {
      * @param integer $port
      * @param string  $username
      * @param string  $password
+     * @param string  $ip       Optional.
      */
-    public function __construct(string $host, int $port, string $username, string $password) {
-        $this->context    = new Context($host, $port, $username, $password);
+    public function __construct(string $host, int $port, string $username, string $password, string $ip = "") {
+        $this->context    = new Context($host, $port, $username, $password, $ip);
 
         $this->service    = new Admin\Service($this->context);
         $this->loginKey   = new Admin\LoginKey($this->context);
@@ -77,7 +78,7 @@ class DirectAdmin {
 
 
     /**
-     * Returns the Server IP
+     * Returns the Server Host
      * @return string
      */
     public function getHost(): string {
@@ -90,6 +91,14 @@ class DirectAdmin {
      */
     public function getPort(): int {
         return $this->context->port;
+    }
+
+    /**
+     * Returns the Server IP
+     * @return string
+     */
+    public function getIP(): string {
+        return $this->context->ip;
     }
 
     /**
