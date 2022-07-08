@@ -7,6 +7,7 @@ namespace DirectAdmin;
 class DirectAdmin {
 
     private $context;
+    public $id;
 
     public $service;
     public $loginKey;
@@ -102,6 +103,38 @@ class DirectAdmin {
     }
 
     /**
+     * Returns the Context Reseller
+     * @return string
+     */
+    public function getReseller(): string {
+        return $this->context->reseller;
+    }
+
+    /**
+     * Returns the Context User
+     * @return string
+     */
+    public function getUser(): string {
+        return $this->context->user;
+    }
+
+    /**
+     * Returns the Context Domain
+     * @return string
+     */
+    public function getDomain(): string {
+        return $this->context->domain;
+    }
+
+    /**
+     * Returns if Context Domain is Delegated
+     * @return string
+     */
+    public function isDelegated(): string {
+        return $this->context->isDelegated;
+    }
+
+    /**
      * Returns the Public Path
      * @param string $path Optional.
      * @return string
@@ -111,6 +144,15 @@ class DirectAdmin {
     }
 
 
+
+    /**
+     * Sets the External ID
+     * @param integer $id
+     * @return void
+     */
+    public function setExternalID(int $id): void {
+        $this->id = $id;
+    }
 
     /**
      * Sets the Reseller for the Context
@@ -123,11 +165,12 @@ class DirectAdmin {
 
     /**
      * Sets the User and Domain for the Context
-     * @param string $user
-     * @param string $domain
+     * @param string  $user
+     * @param string  $domain
+     * @param boolean $isDelegated Optional.
      * @return void
      */
-    public function setUser(string $user, string $domain): void {
-        $this->context->setUser($user, $domain);
+    public function setUser(string $user, string $domain, bool $isDelegated = false): void {
+        $this->context->setUser($user, $domain, $isDelegated);
     }
 }

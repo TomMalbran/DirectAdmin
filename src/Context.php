@@ -20,6 +20,7 @@ class Context {
     public $reseller;
     public $user;
     public $domain;
+    public $isDelegated;
 
 
     /**
@@ -49,13 +50,15 @@ class Context {
 
     /**
      * Sets the User and Domain for the Context
-     * @param string $user
-     * @param string $domain
+     * @param string  $user
+     * @param string  $domain
+     * @param boolean $isDelegated Optional.
      * @return void
      */
-    public function setUser(string $user, string $domain): void {
-        $this->user   = $user;
-        $this->domain = $domain;
+    public function setUser(string $user, string $domain, bool $isDelegated = false): void {
+        $this->user        = $user;
+        $this->domain      = $domain;
+        $this->isDelegated = $isDelegated;
     }
 
 
