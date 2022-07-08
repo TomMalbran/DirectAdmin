@@ -12,10 +12,13 @@ class Subdomain extends Adapter {
 
     /**
      * Returns a list of Subdomains. Requires user login
+     * @param string $domain Optional.
      * @return string[]
      */
-    public function getAll(): array {
-        $response = $this->get(Context::User, "/CMD_API_SUBDOMAINS");
+    public function getAll(string $domain = ""): array {
+        $response = $this->get(Context::User, "/CMD_API_SUBDOMAINS", [
+            "domain" => $domain,
+        ]);
         return $response->list;
     }
 

@@ -121,7 +121,7 @@ class Context {
      * @return array
      */
     public function addParams(string $context, array $params): array {
-        if ($context == self::User) {
+        if ($context == self::User && empty($params["domain"])) {
             $params["domain"] = $this->domain;
         }
         return $params;
