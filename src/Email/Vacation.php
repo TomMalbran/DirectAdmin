@@ -50,10 +50,9 @@ class Vacation extends Adapter {
      * @param string  $text
      * @param integer $fromTime
      * @param integer $toTime
-     * @param boolean $isEdit
      * @return Response
      */
-    public function create(string $user, string $text, int $fromTime, int $toTime, bool $isEdit): Response {
+    public function create(string $user, string $text, int $fromTime, int $toTime): Response {
         $fields = $this->getFields("create", $user, $text, $fromTime, $toTime);
         return $this->post(Context::User, "/CMD_API_EMAIL_VACATION", $fields);
     }
@@ -64,10 +63,9 @@ class Vacation extends Adapter {
      * @param string  $text
      * @param integer $fromTime
      * @param integer $toTime
-     * @param boolean $isEdit
      * @return Response
      */
-    public function edit(string $user, string $text, int $fromTime, int $toTime, bool $isEdit): Response {
+    public function edit(string $user, string $text, int $fromTime, int $toTime): Response {
         $fields = $this->getFields("modify", $user, $text, $fromTime, $toTime);
         return $this->post(Context::User, "/CMD_API_EMAIL_VACATION", $fields);
     }
