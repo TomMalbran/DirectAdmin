@@ -12,11 +12,12 @@ class File extends Adapter {
 
     /**
      * Returns the data for the files and a list of them. Requires user login
-     * @param string $path
+     * @param string  $path
+     * @param boolean $inPublic Optional.
      * @return array
      */
-    public function getAll(string $path): array {
-        $fullPath = $this->context->getPublicPath($path);
+    public function getAll(string $path, bool $inPublic = true): array {
+        $fullPath = $this->context->getPublicPath($path, $inPublic);
         $response = $this->get(Context::User, "/CMD_API_FILE_MANAGER", [ "path" => $fullPath ]);
         $parent   = str_replace(".", "_", substr($path, 0, strrpos($path, "/")));
         $result   = [];
@@ -31,23 +32,25 @@ class File extends Adapter {
 
     /**
      * Returns true if the given File/Directory exists. Requires user login
-     * @param string $path
-     * @param string $name
+     * @param string  $path
+     * @param string  $name
+     * @param boolean $inPublic Optional.
      * @return boolean
      */
-    public function exists(string $path, string $name): bool {
-        $response = $this->getSize($path, $name);
+    public function exists(string $path, string $name, bool $inPublic = true): bool {
+        $response = $this->getSize($path, $name, $inPublic);
         return !$response->hasError;
     }
 
     /**
      * Returns the Size of a File/Directory. Requires user login
-     * @param string $path
-     * @param string $name
+     * @param string  $path
+     * @param string  $name
+     * @param boolean $inPublic Optional.
      * @return Response
      */
-    public function getSize(string $path, string $name): Response {
-        $fullPath = $this->context->getPublicPath($path);
+    public function getSize(string $path, string $name, bool $inPublic = true): Response {
+        $fullPath = $this->context->getPublicPath($path, $inPublic);
         return $this->get(Context::User, "/CMD_API_FILE_MANAGER", [
             "action" => "filesize",
             "path"   => "$fullPath/$name",
@@ -56,12 +59,13 @@ class File extends Adapter {
 
     /**
      * Returns the Contents of the given File. Requires user login
-     * @param string $path
-     * @param string $name
+     * @param string  $path
+     * @param string  $name
+     * @param boolean $inPublic Optional.
      * @return string
      */
-    public function getContents(string $path, string $name): string {
-        $fullPath = $this->context->getPublicPath($path);
+    public function getContents(string $path, string $name, bool $inPublic = true): string {
+        $fullPath = $this->context->getPublicPath($path, $inPublic);
         $response = $this->get(Context::User, "/CMD_FILE_MANAGER", [
             "action" => "edit",
             "path"   => "$fullPath/$name",
@@ -81,9 +85,10 @@ class File extends Adapter {
      * @param string          $path
      * @param string          $name
      * @param string|string[] $content
+     * @param boolean         $inPublic Optional.
      * @return Response
      */
-    public function edit(string $path, string $name, $content): Response {
+    public function edit(string $path, string $name, $content, bool $inPublic = true): Response {
         $fullPath = $this->context->getPublicPath($path);
         $text     = is_array($content) ? implode("\n", $content) : $content;
         return $this->post(Context::User, "/CMD_API_FILE_MANAGER", [
@@ -163,10 +168,11 @@ class File extends Adapter {
      * @param string  $oldName
      * @param string  $newName
      * @param boolean $overwrite Optional.
+     * @param boolean $inPublic  Optional.
      * @return Response
      */
-    public function rename(string $path, string $oldName, string $newName, bool $overwrite = false): Response {
-        $fullPath = $this->context->getPublicPath($path);
+    public function rename(string $path, string $oldName, string $newName, bool $overwrite = false, bool $inPublic = true): Response {
+        $fullPath = $this->context->getPublicPath($path, $inPublic);
         return $this->post(Context::User, "/CMD_API_FILE_MANAGER", [
             "action"    => "rename",
             "path"      => $fullPath,
@@ -182,10 +188,11 @@ class File extends Adapter {
      * @param string  $oldName
      * @param string  $newName
      * @param boolean $overwrite Optional.
+     * @param boolean $inPublic  Optional.
      * @return Response
      */
-    public function duplicate(string $path, string $oldName, string $newName, bool $overwrite = false): Response {
-        $fullPath = $this->context->getPublicPath($path);
+    public function duplicate(string $path, string $oldName, string $newName, bool $overwrite = false, bool $inPublic = true): Response {
+        $fullPath = $this->context->getPublicPath($path, $inPublic);
         return $this->post(Context::User, "/CMD_API_FILE_MANAGER", [
             "action"    => "copy",
             "path"      => $fullPath,
@@ -197,12 +204,13 @@ class File extends Adapter {
 
     /**
      * Extracts the given File. Requires user login
-     * @param string $path
-     * @param string $name
+     * @param string  $path
+     * @param string  $name
+     * @param boolean $inPublic Optional.
      * @return Response
      */
-    public function extract(string $path, string $name): Response {
-        $fullPath = $this->context->getPublicPath($path);
+    public function extract(string $path, string $name, bool $inPublic = true): Response {
+        $fullPath = $this->context->getPublicPath($path, $inPublic);
         return $this->post(Context::User, "/CMD_API_FILE_MANAGER", [
             "action"    => "extract",
             "path"      => "$fullPath/$name",
@@ -213,12 +221,13 @@ class File extends Adapter {
 
     /**
      * Resets a File/Directory Owner. Requires user login
-     * @param string $path
-     * @param string $name
+     * @param string  $path
+     * @param string  $name
+     * @param boolean $inPublic Optional.
      * @return Response
      */
-    public function resetOwner(string $path, string $name): Response {
-        $fullPath = $this->context->getPublicPath($path);
+    public function resetOwner(string $path, string $name, bool $inPublic = true): Response {
+        $fullPath = $this->context->getPublicPath($path, $inPublic);
         return $this->post(Context::User, "/CMD_API_FILE_MANAGER", [
             "action" => "resetowner",
             "path"   => "$fullPath/$name",
@@ -230,13 +239,14 @@ class File extends Adapter {
      * @param string          $path
      * @param string          $chmod
      * @param string[]|string $files
+     * @param boolean         $inPublic Optional.
      * @return Response
      */
-    public function setPermission(string $path, string $chmod, $files): Response {
+    public function setPermission(string $path, string $chmod, $files, bool $inPublic = true): Response {
         $fields = $this->createFields([
             "button" => "permission",
             "chmod"  => $chmod,
-        ], $path, $files);
+        ], $path, $files, $inPublic);
         return $this->post(Context::User, "/CMD_API_FILE_MANAGER", $fields);
     }
 
@@ -245,12 +255,13 @@ class File extends Adapter {
      * @param string          $fromPath
      * @param string          $toPath
      * @param string[]|string $files
+     * @param boolean         $inPublic Optional.
      * @return Response
      */
-    public function move(string $fromPath, string $toPath, $files): Response {
-        $response = $this->addToClipboard($fromPath, $files);
+    public function move(string $fromPath, string $toPath, $files, bool $inPublic = true): Response {
+        $response = $this->addToClipboard($fromPath, $files, $inPublic);
         if (!$response->hasError) {
-            $this->doInClipboard("move", $toPath);
+            $this->doInClipboard("move", $toPath, $inPublic);
             return $this->doInClipboard("empty");
         }
         return $response;
@@ -261,12 +272,13 @@ class File extends Adapter {
      * @param string          $fromPath
      * @param string          $toPath
      * @param string[]|string $files
+     * @param boolean         $inPublic Optional.
      * @return Response
      */
-    public function copy(string $fromPath, string $toPath, $files): Response {
-        $response = $this->addToClipboard($fromPath, $files);
+    public function copy(string $fromPath, string $toPath, $files, bool $inPublic = true): Response {
+        $response = $this->addToClipboard($fromPath, $files, $inPublic);
         if (!$response->hasError) {
-            $this->doInClipboard("copy", $toPath);
+            $this->doInClipboard("copy", $toPath, $inPublic);
             return $this->doInClipboard("empty");
         }
         return $response;
@@ -277,10 +289,11 @@ class File extends Adapter {
      * @param string          $path
      * @param string          $name
      * @param string[]|string $files
+     * @param boolean         $inPublic Optional.
      * @return Response
      */
-    public function compress(string $path, string $name, $files): Response {
-        $response = $this->addToClipboard($path, $files);
+    public function compress(string $path, string $name, $files, bool $inPublic = true): Response {
+        $response = $this->addToClipboard($path, $files, $inPublic);
         if (!$response->hasError) {
             $response = $this->post(Context::User, "/CMD_API_FILE_MANAGER", [
                 "action" => "compress",
@@ -296,12 +309,13 @@ class File extends Adapter {
      * Deletes the given Files/Directories. Requires user login
      * @param string          $path
      * @param string[]|string $files
+     * @param boolean         $inPublic Optional.
      * @return Response
      */
-    public function delete(string $path, $files): Response {
+    public function delete(string $path, $files, bool $inPublic = true): Response {
         $fields = $this->createFields([
             "button" => "delete",
-        ], $path, $files);
+        ], $path, $files, $inPublic);
         return $this->post(Context::User, "/CMD_API_FILE_MANAGER", $fields);
     }
 
@@ -311,23 +325,25 @@ class File extends Adapter {
      * Adds the given Files/Directories to the clipboard. Requires user login
      * @param string          $path
      * @param string[]|string $files
+     * @param boolean         $inPublic Optional.
      * @return Response
      */
-    public function addToClipboard(string $path, $files): Response {
+    public function addToClipboard(string $path, $files, bool $inPublic = true): Response {
         $fields = $this->createFields([
             "add" => "clipboard",
-        ], $path, $files);
+        ], $path, $files, $inPublic);
         return $this->post(Context::User, "/CMD_API_FILE_MANAGER", $fields);
     }
 
     /**
      * Moves/Copies/Deletes the Clipboard Files/Directories. Requires user login
-     * @param string $action
-     * @param string $path   Optional.
+     * @param string  $action
+     * @param string  $path     Optional.
+     * @param boolean $inPublic Optional.
      * @return Response
      */
-    public function doInClipboard(string $action, string $path = ""): Response {
-        $fields = $this->createFields([ $action => "clipboard" ], $path);
+    public function doInClipboard(string $action, string $path = "", bool $inPublic = true): Response {
+        $fields = $this->createFields([ $action => "clipboard" ], $path, null, $inPublic);
         return $this->post(Context::User, "/CMD_API_FILE_MANAGER", $fields);
     }
 
@@ -337,11 +353,12 @@ class File extends Adapter {
      * Returns the Fields for multiple Files
      * @param array           $fields
      * @param string          $path
-     * @param string[]|string $file   Optional.
+     * @param string[]|string $file     Optional.
+     * @param boolean         $inPublic Optional.
      * @return array
      */
-    private function createFields(array $fields, string $path, $file = null): array {
-        $fullPath = $this->context->getPublicPath($path);
+    private function createFields(array $fields, string $path, $file = null, bool $inPublic = true): array {
+        $fullPath = $this->context->getPublicPath($path, $inPublic);
         $files    = !is_array($file) ? [ $file ] : $file;
 
         $fields["action"] = "multiple";

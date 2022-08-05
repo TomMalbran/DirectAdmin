@@ -99,10 +99,14 @@ class Context {
 
     /**
      * Returns the Public Path
-     * @param string $path Optional.
+     * @param string  $path     Optional.
+     * @param boolean $inPublic Optional.
      * @return string
      */
-    public function getPublicPath(string $path = ""): string {
+    public function getPublicPath(string $path = "", bool $inPublic = true): string {
+        if (!$inPublic) {
+            return $path;
+        }
         $result = "/public_html";
         if (!empty($this->domain)) {
             $result = "/domains/{$this->domain}/public_html";
