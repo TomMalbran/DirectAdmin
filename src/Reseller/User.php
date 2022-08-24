@@ -16,7 +16,7 @@ class User extends Adapter {
      */
     public function getAll(): array {
         $response = $this->get(Context::Reseller, "/CMD_API_SHOW_USERS");
-        return $response->data;
+        return $response->list;
     }
 
     /**

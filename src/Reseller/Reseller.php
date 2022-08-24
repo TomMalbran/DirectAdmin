@@ -16,7 +16,7 @@ class Reseller extends Adapter {
      */
     public function getAll(): array {
         $response = $this->get(Context::Admin, "/CMD_API_SHOW_RESELLERS");
-        return $response->data;
+        return $response->list;
     }
 
     /**
