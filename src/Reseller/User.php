@@ -238,6 +238,25 @@ class User extends Adapter {
     }
 
     /**
+     * Sets the SSL for the User's Domain. Requires user login
+     * @param string $domain
+     * @return Response
+     */
+    public function setSSL(string $domain): Response {
+        return $this->post(Context::User, "/CMD_API_SSL", [
+            "action"     => "save",
+            "type"       => "create",
+            "request"    => "letsencrypt",
+            "name"       => $domain,
+            "keysize"    => "secp384r1",
+            "encryption" => "sha256",
+            "le_select0" => $domain,
+            "le_select1" => "www.$domain",
+            "submit"     => "save",
+        ]);
+    }
+
+    /**
      * Sets the User's Additional Bandwidth
      * @param string  $user
      * @param integer $amount
