@@ -68,10 +68,13 @@ class Email extends Adapter {
      * @return Response
      */
     public function create(string $user, string $password = "", int $quota = 0): Response {
-        $fields = $this->createFields([
-            "action" => "create",
-        ], $user, $password, $quota);
-        return $this->post(Context::User, "/CMD_API_POP", $fields);
+        return $this->post(Context::User, "/CMD_API_POP", [
+            "action"  => "create",
+            "user"    => $user,
+            "quota"   => $quota,
+            "passwd"  => $password,
+            "passwd2" => $password,
+        ]);
     }
 
     /**
@@ -83,33 +86,14 @@ class Email extends Adapter {
      * @return Response
      */
     public function edit(string $user, string $newuser, string $password = "", int $quota = 0): Response {
-        $fields = $this->createFields([
+        return $this->post(Context::User, "/CMD_API_POP", [
             "action"  => "modify",
+            "user"    => $user,
             "newuser" => $newuser,
-        ], $user, $password, $quota);
-        return $this->post(Context::User, "/CMD_API_POP", $fields);
-    }
-
-    /**
-     * Returns the fields to create or edit an Email Account
-     * @param array   $fields
-     * @param string  $user
-     * @param string  $password
-     * @param integer $quota
-     * @return array
-     */
-    private function createFields(array $fields, string $user, string $password, int $quota): array {
-        $fields += [
-            "user"  => $user,
-            "quota" => $quota,
-        ];
-        if (!empty($password)) {
-            $fields += [
-                "passwd"  => $password,
-                "passwd2" => $password,
-            ];
-        }
-        return $fields;
+            "quota"   => $quota,
+            "passwd"  => $password,
+            "passwd2" => $password,
+        ]);
     }
 
 
