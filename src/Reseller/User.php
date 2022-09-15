@@ -20,6 +20,16 @@ class User extends Adapter {
     }
 
     /**
+     * Returns true if the given User exists
+     * @param string $user
+     * @return boolean
+     */
+    public function exists(string $user): bool {
+        $response = $this->get(Context::Admin, "/CMD_API_SHOW_USER_USAGE", [ "user" => $user ]);
+        return !$response->hasError;
+    }
+
+    /**
      * Returns the Users limits and usage
      * @param string $user
      * @param string $domain
