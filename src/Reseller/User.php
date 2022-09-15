@@ -107,7 +107,7 @@ class User extends Adapter {
      * @return Response
      */
     public function create(array $data): Response {
-        return $this->post(Context::Admin, "/CMD_API_ACCOUNT_USER", [
+        return $this->post(Context::Reseller, "/CMD_API_ACCOUNT_USER", [
             "action"   => "create",
             "add"      => "Submit",
             "username" => $data["username"],
@@ -116,7 +116,7 @@ class User extends Adapter {
             "passwd2"  => $data["password"],
             "domain"   => $data["domain"],
             "package"  => $data["package"],
-            "ip"       => $this->context->host,
+            "ip"       => $this->context->ip,
             "notify"   => "no",
         ]);
     }
