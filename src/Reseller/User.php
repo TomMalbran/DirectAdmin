@@ -217,7 +217,7 @@ class User extends Adapter {
      * @return Response
      */
     public function changeDomain(string $oldDomain, string $newDomain): Response {
-        return $this->post(Context::Admin, "/CMD_API_CHANGE_DOMAIN", [
+        return $this->post(Context::User, "/CMD_API_CHANGE_DOMAIN", [
             "old_domain" => $oldDomain,
             "new_domain" => $newDomain,
         ]);
