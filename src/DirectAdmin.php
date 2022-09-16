@@ -22,6 +22,7 @@ class DirectAdmin {
     public $backup;
     public $database;
     public $ftpAccount;
+    public $cronJob;
     public $phpConfig;
 
     public $domainPtr;
@@ -61,6 +62,7 @@ class DirectAdmin {
         $this->backup     = new User\Backup($this->context);
         $this->database   = new User\Database($this->context);
         $this->ftpAccount = new User\FTPAccount($this->context);
+        $this->cronJob    = new User\CronJob($this->context);
         $this->phpConfig  = new User\PHPConfig($this->context);
 
         $this->domainPtr  = new Domain\DomainPtr($this->context);
