@@ -12,12 +12,13 @@ class Directory extends Adapter {
 
     /**
      * Returns the protections for the given Directory. Requires user login
-     * @param string $path
-     * @param string $name
+     * @param string  $path
+     * @param string  $name
+     * @param boolean $inPublic Optional.
      * @return Response
      */
-    public function getProtections(string $path, string $name): Response {
-        $fullPath = $this->context->getPublicPath($path);
+    public function getProtections(string $path, string $name, bool $inPublic = true): Response {
+        $fullPath = $this->context->getPublicPath($path, $inPublic);
         $response = $this->get(Context::User, "/CMD_API_FILE_MANAGER", [
             "action" => "protect",
             "path"   => "$fullPath/$name",
