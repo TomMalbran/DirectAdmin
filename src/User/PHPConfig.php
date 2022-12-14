@@ -12,7 +12,7 @@ class PHPConfig extends Adapter {
 
     /**
      * Retrieves the PHP safe mode and open basedir config
-     * @return array
+     * @return array{}[]
      */
     public function getAll(): array {
         $response = $this->get(Context::User, "/CMD_API_PHP_SAFE_MODE");

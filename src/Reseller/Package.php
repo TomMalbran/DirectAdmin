@@ -12,9 +12,9 @@ class Package extends Adapter {
 
     /**
      * Returns the list of users packages for the current Reseller
-     * @return array
+     * @return array{}[]
      */
-    public function getUsers() {
+    public function getUsers(): array {
         $response = $this->get(Context::Reseller, "/CMD_API_PACKAGES_USER");
         $result   = [];
 

@@ -6,36 +6,36 @@ namespace DirectAdmin;
  */
 class DirectAdmin {
 
-    private $context;
-    public $id;
+    private Context $context;
+    public string   $id;
 
-    public $service;
-    public $loginKey;
-    public $mailQueue;
+    public Admin\Service   $service;
+    public Admin\LoginKey  $loginKey;
+    public Admin\MailQueue $mailQueue;
 
-    public $reseller;
-    public $user;
-    public $package;
-    public $transfer;
+    public Reseller\Reseller $reseller;
+    public Reseller\User     $user;
+    public Reseller\Package  $package;
+    public Reseller\Transfer $transfer;
 
-    public $account;
-    public $backup;
-    public $database;
-    public $ftpAccount;
-    public $cronJob;
-    public $phpConfig;
+    public User\Account    $account;
+    public User\Backup     $backup;
+    public User\Database   $database;
+    public User\FTPAccount $ftpAccount;
+    public User\CronJob    $cronJob;
+    public User\PHPConfig  $phpConfig;
 
-    public $domainPtr;
-    public $subdomain;
-    public $redirect;
+    public Domain\DomainPtr $domainPtr;
+    public Domain\Subdomain $subdomain;
+    public Domain\Redirect  $redirect;
 
-    public $email;
-    public $forwarder;
-    public $responder;
-    public $vacation;
+    public Email\Email     $email;
+    public Email\Forwarder $forwarder;
+    public Email\Responder $responder;
+    public Email\Vacation  $vacation;
 
-    public $directory;
-    public $file;
+    public File\Directory $directory;
+    public File\File      $file;
 
 
     /**
@@ -150,19 +150,21 @@ class DirectAdmin {
     /**
      * Sets the External ID
      * @param integer $id
-     * @return void
+     * @return DirectAdmin
      */
-    public function setExternalID(int $id): void {
+    public function setExternalID(int $id): DirectAdmin {
         $this->id = $id;
+        return $this;
     }
 
     /**
      * Sets the Reseller for the Context
      * @param string $reseller
-     * @return void
+     * @return DirectAdmin
      */
-    public function setReseller(string $reseller): void {
+    public function setReseller(string $reseller): DirectAdmin {
         $this->context->setReseller($reseller);
+        return $this;
     }
 
     /**
@@ -170,9 +172,10 @@ class DirectAdmin {
      * @param string  $user
      * @param string  $domain
      * @param boolean $isDelegated Optional.
-     * @return void
+     * @return DirectAdmin
      */
-    public function setUser(string $user, string $domain, bool $isDelegated = false): void {
+    public function setUser(string $user, string $domain, bool $isDelegated = false): DirectAdmin {
         $this->context->setUser($user, $domain, $isDelegated);
+        return $this;
     }
 }

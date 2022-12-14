@@ -12,7 +12,7 @@ class FTPAccount extends Adapter {
 
     /**
      * Returns a list of FTP Accounts. Requires user login
-     * @return array
+     * @return array{}[]
      */
     public function getAll(): array {
         $response = $this->get(Context::User, "/CMD_API_FTP");
@@ -40,7 +40,7 @@ class FTPAccount extends Adapter {
 
     /**
      * Returns a list of FTP Accounts. Requires user login
-     * @return array
+     * @return string[]
      */
     public function getList(): array {
         $response = $this->get(Context::User, "/CMD_API_FTP");
@@ -91,7 +91,7 @@ class FTPAccount extends Adapter {
      * @param string $type
      * @param string $password Optional.
      * @param string $path     Optional.
-     * @return array
+     * @return array{}
      */
     private function createFields(string $action, string $user, string $type, string $password = "", string $path = ""): array {
         $fields = [

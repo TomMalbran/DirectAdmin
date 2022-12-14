@@ -43,7 +43,7 @@ class LoginKey extends Adapter {
      * @param string  $ip
      * @param string  $keyname
      * @param boolean $isCreate Optional.
-     * @return array
+     * @return array{}
      */
     private function createFields(string $key, string $password, string $ip, string $keyname, bool $isCreate): array {
         return [

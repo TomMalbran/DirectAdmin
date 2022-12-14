@@ -12,7 +12,7 @@ class Reseller extends Adapter {
 
     /**
      * Returns the list of Resellers for the current server
-     * @return array
+     * @return string[]
      */
     public function getAll(): array {
         $response = $this->get(Context::Admin, "/CMD_API_SHOW_RESELLERS");
@@ -22,7 +22,7 @@ class Reseller extends Adapter {
     /**
      * Returns the Reseller limits and usage
      * @param string $user
-     * @return array
+     * @return array{}
      */
     public function getInfo(string $user): array {
         $fields = [ "bandwidth", "quota", "domainptr", "mysql", "nemailf", "nemailr", "nemails", "nsubdomains", "vdomains" ];
@@ -57,7 +57,7 @@ class Reseller extends Adapter {
 
     /**
      * Creates a new Reseller
-     * @param array $data
+     * @param array{} $data
      * @return Response
      */
     public function create(array $data): Response {
@@ -128,7 +128,7 @@ class Reseller extends Adapter {
      * @param string $package
      * @return Response
      */
-    public function changePackage(string $user, string $package) {
+    public function changePackage(string $user, string $package): Response {
         return $this->post(Context::Admin, "/CMD_API_MODIFY_RESELLER", [
             "action"  => "package",
             "user"    => $user,

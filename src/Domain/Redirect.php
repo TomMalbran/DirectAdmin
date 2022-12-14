@@ -12,7 +12,7 @@ class Redirect extends Adapter {
 
     /**
      * Returns a list of Redirects. Requires user login
-     * @return array
+     * @return array{}[]
      */
     public function getAll(): array {
         $response = $this->get(Context::User, "/CMD_API_REDIRECT");

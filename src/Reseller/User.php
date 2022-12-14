@@ -12,7 +12,7 @@ class User extends Adapter {
 
     /**
      * Returns the list of Users for the current Reseller
-     * @return array
+     * @return string[]
      */
     public function getAll(): array {
         $response = $this->get(Context::Reseller, "/CMD_API_SHOW_USERS");
@@ -33,7 +33,7 @@ class User extends Adapter {
      * Returns the Users limits and usage
      * @param string $user
      * @param string $domain
-     * @return array
+     * @return array{}
      */
     public function getInfo(string $user, string $domain): array {
         $fields = [ "bandwidth", "quota", "domainptr", "mysql", "nemailf", "nemailr", "nemails", "nsubdomains", "ftp" ];
@@ -75,7 +75,7 @@ class User extends Adapter {
     /**
      * Returns the users configuration
      * @param string $user
-     * @return array
+     * @return array{}
      */
     public function getConfig(string $user): array {
         $response = $this->get(Context::Admin, "/CMD_API_SHOW_USER_CONFIG", [
@@ -103,7 +103,7 @@ class User extends Adapter {
 
     /**
      * Creates a new User
-     * @param array $data
+     * @param array{} $data
      * @return Response
      */
     public function create(array $data): Response {
@@ -138,11 +138,11 @@ class User extends Adapter {
 
     /**
      * Suspends or Unsuspends the given User Account
-     * @param string|string[] $user
+     * @param string[]|string $user
      * @param boolean         $suspend Optional.
      * @return Response
      */
-    public function suspend($user, bool $suspend = true): Response {
+    public function suspend(array|string $user, bool $suspend = true): Response {
         $users  = is_array($user) ? $user : [ $user ];
         $fields = $suspend ? [ "dosuspend" => "Suspend" ] : [ "dounsuspend" => "Unsuspend" ];
 

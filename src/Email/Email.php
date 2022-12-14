@@ -12,7 +12,7 @@ class Email extends Adapter {
 
     /**
      * Returns a list with all the Email Accounts Data. Requires user login
-     * @return array
+     * @return array{}[]
      */
     public function getAll(): array {
         $response = $this->get(Context::User, "/CMD_API_POP", [
@@ -158,7 +158,7 @@ class Email extends Adapter {
      * @param string          $what
      * @return Response
      */
-    public function purge($user, string $file, string $what): Response {
+    public function purge(array|string $user, string $file, string $what): Response {
         $fields = [
             "action" => "delete",
             "purge"  => "Purge From",

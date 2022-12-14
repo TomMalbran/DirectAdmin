@@ -1,12 +1,14 @@
 <?php
 namespace DirectAdmin;
 
+use DirectAdmin\Context;
+
 /**
  * The Adapter Class
  */
 class Adapter {
 
-    protected $context;
+    protected Context $context;
 
 
     /**
@@ -23,7 +25,7 @@ class Adapter {
      * Does a get query to the server
      * @param string  $context
      * @param string  $endPoint
-     * @param array   $params   Optional.
+     * @param array{} $params   Optional.
      * @param boolean $isJSON   Optional.
      * @return Response
      */
@@ -35,7 +37,7 @@ class Adapter {
      * Does a post query to the server
      * @param string  $context
      * @param string  $endPoint
-     * @param array   $params   Optional.
+     * @param array{} $params   Optional.
      * @param boolean $isJSON   Optional.
      * @return Response
      */
@@ -47,7 +49,7 @@ class Adapter {
      * Does a query to the server
      * @param string  $context
      * @param string  $endPoint
-     * @param array   $params
+     * @param array{} $params
      * @param string  $method
      * @param boolean $isJSON
      * @return Response
@@ -126,8 +128,8 @@ class Adapter {
 
     /**
      * Execute a Curl request
-     * @param array $options
-     * @return array
+     * @param array{} $options
+     * @return mixed[]
      */
     private function execute(array $options): array {
         $curl = curl_init();

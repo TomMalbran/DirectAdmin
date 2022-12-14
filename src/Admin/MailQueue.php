@@ -12,7 +12,7 @@ class MailQueue extends Adapter {
 
     /**
      * Returns the list with all the mail queue for the current server
-     * @return array
+     * @return array{}[]
      */
     public function getAll(): array {
         $response = $this->get(Context::Admin, "/CMD_API_MAIL_QUEUE");
@@ -39,7 +39,7 @@ class MailQueue extends Adapter {
     /**
      * Returns the data for a single mail, with the given id
      * @param integer $mailID
-     * @return array
+     * @return array{}
      */
     public function getOne(int $mailID): array {
         $response = $this->get(Context::Admin, "/CMD_API_MAIL_QUEUE", [

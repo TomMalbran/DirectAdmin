@@ -14,7 +14,7 @@ class File extends Adapter {
      * Returns the data for the files and a list of them. Requires user login
      * @param string  $path
      * @param boolean $inPublic Optional.
-     * @return array
+     * @return array{}[]
      */
     public function getAll(string $path, bool $inPublic = true): array {
         $fullPath = $this->context->getPublicPath($path, $inPublic);
@@ -88,8 +88,8 @@ class File extends Adapter {
      * @param boolean         $inPublic Optional.
      * @return Response
      */
-    public function edit(string $path, string $name, $content, bool $inPublic = true): Response {
-        $fullPath = $this->context->getPublicPath($path);
+    public function edit(string $path, string $name, array|string $content, bool $inPublic = true): Response {
+        $fullPath = $this->context->getPublicPath($path, $inPublic);
         $text     = is_array($content) ? implode("\n", $content) : $content;
         return $this->post(Context::User, "/CMD_API_FILE_MANAGER", [
             "action"   => "edit",
@@ -242,7 +242,7 @@ class File extends Adapter {
      * @param boolean         $inPublic Optional.
      * @return Response
      */
-    public function setPermission(string $path, string $chmod, $files, bool $inPublic = true): Response {
+    public function setPermission(string $path, string $chmod, array|string $files, bool $inPublic = true): Response {
         $fields = $this->createFields([
             "button" => "permission",
             "chmod"  => $chmod,
@@ -258,7 +258,7 @@ class File extends Adapter {
      * @param boolean         $inPublic Optional.
      * @return Response
      */
-    public function move(string $fromPath, string $toPath, $files, bool $inPublic = true): Response {
+    public function move(string $fromPath, string $toPath, array|string $files, bool $inPublic = true): Response {
         $response = $this->addToClipboard($fromPath, $files, $inPublic);
         if (!$response->hasError) {
             $this->doInClipboard("move", $toPath, $inPublic);
@@ -275,7 +275,7 @@ class File extends Adapter {
      * @param boolean         $inPublic Optional.
      * @return Response
      */
-    public function copy(string $fromPath, string $toPath, $files, bool $inPublic = true): Response {
+    public function copy(string $fromPath, string $toPath, array|string $files, bool $inPublic = true): Response {
         $response = $this->addToClipboard($fromPath, $files, $inPublic);
         if (!$response->hasError) {
             $this->doInClipboard("copy", $toPath, $inPublic);
@@ -292,7 +292,7 @@ class File extends Adapter {
      * @param boolean         $inPublic Optional.
      * @return Response
      */
-    public function compress(string $path, string $name, $files, bool $inPublic = true): Response {
+    public function compress(string $path, string $name, array|string $files, bool $inPublic = true): Response {
         $response = $this->addToClipboard($path, $files, $inPublic);
         if (!$response->hasError) {
             $response = $this->post(Context::User, "/CMD_API_FILE_MANAGER", [
@@ -312,7 +312,7 @@ class File extends Adapter {
      * @param boolean         $inPublic Optional.
      * @return Response
      */
-    public function delete(string $path, $files, bool $inPublic = true): Response {
+    public function delete(string $path, array|string $files, bool $inPublic = true): Response {
         $fields = $this->createFields([
             "button" => "delete",
         ], $path, $files, $inPublic);
@@ -328,7 +328,7 @@ class File extends Adapter {
      * @param boolean         $inPublic Optional.
      * @return Response
      */
-    public function addToClipboard(string $path, $files, bool $inPublic = true): Response {
+    public function addToClipboard(string $path, array|string $files, bool $inPublic = true): Response {
         $fields = $this->createFields([
             "add" => "clipboard",
         ], $path, $files, $inPublic);
@@ -351,13 +351,13 @@ class File extends Adapter {
 
     /**
      * Returns the Fields for multiple Files
-     * @param array           $fields
-     * @param string          $path
-     * @param string[]|string $file     Optional.
-     * @param boolean         $inPublic Optional.
-     * @return array
+     * @param array{}              $fields
+     * @param string               $path
+     * @param string[]|string|null $file     Optional.
+     * @param boolean              $inPublic Optional.
+     * @return array{}
      */
-    private function createFields(array $fields, string $path, $file = null, bool $inPublic = true): array {
+    private function createFields(array $fields, string $path, array|string|null $file = null, bool $inPublic = true): array {
         $fullPath = $this->context->getPublicPath($path, $inPublic);
         $files    = !is_array($file) ? [ $file ] : $file;
 

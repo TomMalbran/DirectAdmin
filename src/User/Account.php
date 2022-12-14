@@ -12,7 +12,7 @@ class Account extends Adapter {
 
     /**
      * Returns the Users limits and usage
-     * @return array
+     * @return array{}
      */
     public function getInfo(): array {
         $fields = [ "bandwidth", "quota", "domainptr", "mysql", "nemailf", "nemailr", "nemails", "nsubdomains", "ftp" ];
@@ -55,9 +55,9 @@ class Account extends Adapter {
 
     /**
      * Returns the User's Configuration
-     * @return array
+     * @return array{}
      */
-    public function getConfig() {
+    public function getConfig(): array {
         $response = $this->get(Context::Admin, "/CMD_API_SHOW_USER_CONFIG", [
             "user" => $this->context->user,
         ]);
@@ -203,7 +203,7 @@ class Account extends Adapter {
      * @param integer $lines Optional.
      * @return string
      */
-    public function getErrorLog(int $lines = 10) {
+    public function getErrorLog(int $lines = 10): string {
         $response = $this->get(Context::User, "/CMD_SHOW_LOG", [
             "type"  => "error",
             "lines" => $lines,
@@ -216,7 +216,7 @@ class Account extends Adapter {
      * @param integer $lines Optional.
      * @return string
      */
-    public function getAccessLog(int $lines = 10) {
+    public function getAccessLog(int $lines = 10): string {
         $response = $this->get(Context::User, "/CMD_SHOW_LOG", [
             "type"  => "access",
             "lines" => $lines,
@@ -234,7 +234,7 @@ class Account extends Adapter {
 
     /**
      * Sets the Spam Configuration. Requires user login
-     * @param array $data
+     * @param array{} $data
      * @return Response
      */
     public function setSpamConfig(array $data): Response {

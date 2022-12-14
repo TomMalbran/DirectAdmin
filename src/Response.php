@@ -6,22 +6,28 @@ namespace DirectAdmin;
  */
 class Response {
 
-    public $parsed   = [];
-    public $raw      = "";
+    /** @var array{} */
+    public array  $parsed   = [];
+    public string $raw      = "";
 
-    public $hasError = true;
-    public $error    = "";
-    public $details  = "";
+    public bool   $hasError = true;
+    public string $error    = "";
+    public string $details  = "";
 
-    public $data     = [];
-    public $keys     = [];
-    public $list     = [];
+    /** @var mixed[] */
+    public array  $data     = [];
+
+    /** @var string[] */
+    public array  $keys     = [];
+
+    /** @var string[] */
+    public array  $list     = [];
 
 
     /**
      * Creates a new Response instance
-     * @param array  $parsed Optional.
-     * @param string $raw    Optional.
+     * @param array{} $parsed Optional.
+     * @param string  $raw    Optional.
      */
     public function __construct(array $parsed = [], string $raw = "") {
         if (!empty($parsed)) {

@@ -12,7 +12,7 @@ class Responder extends Adapter {
 
     /**
      * Returns a list with all the Email Autoresponders. Requires user login
-     * @return array
+     * @return array{}[]
      */
     public function getAll(): array {
         $response = $this->get(Context::User, "/CMD_API_EMAIL_AUTORESPONDER");
@@ -76,7 +76,7 @@ class Responder extends Adapter {
      * @param string $user
      * @param string $text
      * @param string $cc     Optional.
-     * @return array
+     * @return array{}
      */
     private function createFields(string $action, string $user, string $text, string $cc = ""): array {
         $fields = [

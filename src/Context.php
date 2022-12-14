@@ -11,16 +11,16 @@ class Context {
     const User     = "user";
 
 
-    public $host;
-    public $port;
-    public $username;
-    public $password;
-    public $ip;
+    public string $host;
+    public int    $port;
+    public string $username;
+    public string $password;
+    public string $ip;
 
-    public $reseller;
-    public $user;
-    public $domain;
-    public $isDelegated;
+    public string $reseller;
+    public string $user;
+    public string $domain;
+    public bool   $isDelegated;
 
 
     /**
@@ -42,10 +42,11 @@ class Context {
     /**
      * Sets the Reseller for the Context
      * @param string $reseller
-     * @return void
+     * @return Context
      */
-    public function setReseller(string $reseller): void {
+    public function setReseller(string $reseller): Context {
         $this->reseller = $reseller;
+        return $this;
     }
 
     /**
@@ -53,12 +54,13 @@ class Context {
      * @param string  $user
      * @param string  $domain
      * @param boolean $isDelegated Optional.
-     * @return void
+     * @return Context
      */
-    public function setUser(string $user, string $domain, bool $isDelegated = false): void {
+    public function setUser(string $user, string $domain, bool $isDelegated = false): Context {
         $this->user        = $user;
         $this->domain      = $domain;
         $this->isDelegated = $isDelegated;
+        return $this;
     }
 
 
@@ -120,9 +122,9 @@ class Context {
 
     /**
      * Adds fields to the Params depending on the Context
-     * @param string $context
-     * @param array  $params
-     * @return array
+     * @param string  $context
+     * @param array{} $params
+     * @return array{}
      */
     public function addParams(string $context, array $params): array {
         if ($context == self::User && empty($params["domain"])) {

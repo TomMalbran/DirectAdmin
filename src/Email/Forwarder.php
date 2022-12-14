@@ -12,7 +12,7 @@ class Forwarder extends Adapter {
 
     /**
      * Returns a list with all the Email Forwarders. Requires user login
-     * @return array
+     * @return array{}[]
      */
     public function getAll(): array {
         $response = $this->get(Context::User, "/CMD_API_EMAIL_FORWARDERS");

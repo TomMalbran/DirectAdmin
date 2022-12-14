@@ -12,7 +12,7 @@ class Service extends Adapter {
 
     /**
      * Returns the list with the status of all the services
-     * @return array
+     * @return array{}[]
      */
     public function getAll(): array {
         $response = $this->get(Context::Admin, "/CMD_API_SHOW_SERVICES");

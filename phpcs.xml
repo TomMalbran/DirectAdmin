@@ -28,6 +28,9 @@
     <rule ref="Squiz.Commenting.FunctionCommentThrowTag"/>
     <rule ref="Squiz.Commenting.ClassComment"/>
 
+    <!-- Types -->
+    <rule ref="/Users/tomas/.composer/vendor/gskema/phpcs-type-sniff/src/Sniffs/CompositeCodeElementSniff.php" />
+
     <!-- Arrays -->
     <rule ref="Squiz.Arrays.ArrayDeclaration">
         <exclude name="Squiz.Arrays.ArrayDeclaration.KeyNotAligned"/>
@@ -71,7 +74,7 @@
     <rule ref="Generic.Formatting.SpaceAfterCast"/>
     <rule ref="Generic.Functions.CallTimePassByReference"/>
     <rule ref="Generic.Functions.FunctionCallArgumentSpacing"/>
-    
+
     <rule ref="Generic.Metrics.CyclomaticComplexity">
         <properties>
             <property name="complexity" value="50"/>

@@ -12,7 +12,7 @@ class DomainPtr extends Adapter {
 
     /**
      * Returns a list of Domain Pointers. Requires user login
-     * @return array
+     * @return array{}[]
      */
     public function getAll(): array {
         $response = $this->get(Context::User, "/CMD_API_DOMAIN_POINTER");

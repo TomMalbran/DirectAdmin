@@ -12,7 +12,7 @@ class Vacation extends Adapter {
 
     /**
      * Returns a list with all the Vacations Messages. Requires user login
-     * @return array
+     * @return array{}[]
      */
     public function getAll(): array {
         $response = $this->get(Context::User, "/CMD_API_EMAIL_VACATION");
@@ -77,7 +77,7 @@ class Vacation extends Adapter {
      * @param string  $text
      * @param integer $fromTime
      * @param integer $toTime
-     * @return array
+     * @return array{}
      */
     private function getFields(string $action, string $user, string $text, int $fromTime, int $toTime): array {
         return [

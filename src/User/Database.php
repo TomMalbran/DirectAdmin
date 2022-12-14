@@ -21,7 +21,7 @@ class Database extends Adapter {
 
     /**
      * Returns a list of Databases with Users. Requires user login
-     * @return array
+     * @return array{}
      */
     public function getWithUsers(): array {
         $response = $this->get(Context::User, "/CMD_API_DATABASES");
