@@ -11,7 +11,7 @@ use DirectAdmin\Response;
 class Responder extends Adapter {
 
     /**
-     * Returns a list with all the Email Autoresponders. Requires user login
+     * Returns a list with all the Email Auto Responders. Requires user login
      * @return array{}[]
      */
     public function getAll(): array {
@@ -36,7 +36,7 @@ class Responder extends Adapter {
     }
 
     /**
-     * Returns a list with all the Email Autoresponders usernames. Requires user login
+     * Returns a list with all the Email Auto Responders usernames. Requires user login
      * @return string[]
      */
     public function getUsers(): array {
@@ -47,7 +47,7 @@ class Responder extends Adapter {
 
 
     /**
-     * Creates an Email Autoresponder. Requires user login
+     * Creates an Email Auto Responder. Requires user login
      * @param string $user
      * @param string $text
      * @param string $cc   Optional.
@@ -59,7 +59,7 @@ class Responder extends Adapter {
     }
 
     /**
-     * Edits an Email Autoresponder. Requires user login
+     * Edits an Email Auto Responder. Requires user login
      * @param string $user
      * @param string $text
      * @param string $cc   Optional.
@@ -71,7 +71,7 @@ class Responder extends Adapter {
     }
 
     /**
-     * Returns the fields to create or edit an Email Autoresponder
+     * Returns the fields to create or edit an Email Auto Responder
      * @param string $action
      * @param string $user
      * @param string $text
@@ -96,7 +96,7 @@ class Responder extends Adapter {
 
 
     /**
-     * Deletes the Email Autoresponder with the given user in the given domain. Requires user login
+     * Deletes the Email Auto Responder with the given user in the given domain. Requires user login
      * @param string $user
      * @return Response
      */

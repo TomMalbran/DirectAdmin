@@ -71,12 +71,12 @@ class Service extends Adapter {
 
     /**
      * Reboots the server
-     * @param string $adminpass
+     * @param string $adminPass
      * @return Response
      */
-    public function rebootServer(string $adminpass): Response {
+    public function rebootServer(string $adminPass): Response {
         return $this->post(Context::Admin, "/CMD_API_REBOOT", [
-            "passwd" => $adminpass,
+            "passwd" => $adminPass,
         ]);
     }
 }

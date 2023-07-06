@@ -125,7 +125,7 @@ class File extends Adapter {
         $username = $this->context->user;
         $domain   = $this->context->domain;
         $response = $this->get(Context::User, "/CMD_API_FTP");
-        $pdom     = "@" . str_replace(".", "_", $domain);
+        $atDomain = "@" . str_replace(".", "_", $domain);
 
         if ($response->hasError) {
             return "";
@@ -134,8 +134,8 @@ class File extends Adapter {
         $index  = 0;
         $fields = [];
         foreach ($response->keys as $name) {
-            if (strpos($name, $pdom) !== FALSE) {
-                $fields["select$index"] = str_replace($pdom, "", $name);
+            if (strpos($name, $atDomain) !== FALSE) {
+                $fields["select$index"] = str_replace($atDomain, "", $name);
                 $index += 1;
             }
         }

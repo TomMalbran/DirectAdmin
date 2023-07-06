@@ -15,11 +15,11 @@ class LoginKey extends Adapter {
      * @param string $key
      * @param string $password
      * @param string $ip
-     * @param string $keyname
+     * @param string $keyName
      * @return Response
      */
-    public function create(string $key, string $password, string $ip, string $keyname): Response {
-        $fields = $this->createFields($key, $password, $ip, $keyname, true);
+    public function create(string $key, string $password, string $ip, string $keyName): Response {
+        $fields = $this->createFields($key, $password, $ip, $keyName, true);
         return $this->post(Context::Admin, "/CMD_API_LOGIN_KEYS", $fields);
     }
 
@@ -28,11 +28,11 @@ class LoginKey extends Adapter {
      * @param string $key
      * @param string $password
      * @param string $ip
-     * @param string $keyname
+     * @param string $keyName
      * @return Response
      */
-    public function edit(string $key, string $password, string $ip, string $keyname): Response {
-        $fields = $this->createFields($key, $password, $ip, $keyname, false);
+    public function edit(string $key, string $password, string $ip, string $keyName): Response {
+        $fields = $this->createFields($key, $password, $ip, $keyName, false);
         return $this->post(Context::Admin, "/CMD_API_LOGIN_KEYS", $fields);
     }
 
@@ -41,14 +41,14 @@ class LoginKey extends Adapter {
      * @param string  $key
      * @param string  $password
      * @param string  $ip
-     * @param string  $keyname
+     * @param string  $keyName
      * @param boolean $isCreate Optional.
      * @return array{}
      */
-    private function createFields(string $key, string $password, string $ip, string $keyname, bool $isCreate): array {
+    private function createFields(string $key, string $password, string $ip, string $keyName, bool $isCreate): array {
         return [
             "action"         => $isCreate ? "create" : "modify",
-            "keyname"        => $keyname,
+            "keyname"        => $keyName,
             "key"            => $key,
             "key2"           => $key,
             "never_expires"  => "yes",
@@ -71,14 +71,14 @@ class LoginKey extends Adapter {
 
     /**
      * Deletes the Login Key
-     * @param string $keyname
+     * @param string $keyName
      * @return Response
      */
-    public function delete(string $keyname): Response {
+    public function delete(string $keyName): Response {
         return $this->post(Context::Admin, "/CMD_API_LOGIN_KEYS", [
             "delete"  => "Delete",
             "action"  => "select",
-            "select1" => $keyname,
+            "select1" => $keyName,
         ]);
     }
 }

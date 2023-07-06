@@ -80,16 +80,16 @@ class Email extends Adapter {
     /**
      * Edits an Email Account. Requires user login
      * @param string  $user
-     * @param string  $newuser
+     * @param string  $newUser
      * @param string  $password Optional.
      * @param integer $quota    Optional.
      * @return Response
      */
-    public function edit(string $user, string $newuser, string $password = "", int $quota = 0): Response {
+    public function edit(string $user, string $newUser, string $password = "", int $quota = 0): Response {
         return $this->post(Context::User, "/CMD_API_POP", [
             "action"  => "modify",
             "user"    => $user,
-            "newuser" => $newuser,
+            "newuser" => $newUser,
             "quota"   => $quota,
             "passwd"  => $password,
             "passwd2" => $password,
