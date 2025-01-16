@@ -1,4 +1,5 @@
 <?php
+// spell-checker: ignore  resetowner
 namespace DirectAdmin\File;
 
 use DirectAdmin\Context;
@@ -128,7 +129,7 @@ class File extends Adapter {
         $atDomain = "@" . str_replace(".", "_", $domain);
 
         if ($response->hasError) {
-            return "";
+            return $response;
         }
 
         $index  = 0;
