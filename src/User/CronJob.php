@@ -12,11 +12,31 @@ class CronJob extends Adapter {
 
     /**
      * Returns a list of Cron Jobs. Requires user login
-     * @return string[]
+     * @return array{}[]
      */
     public function getAll(): array {
-        $response = $this->get(Context::User, "/CMD_API_CRON_JOBS");
-        return $response->list;
+        $response = $this->get(Context::User, "/CMD_CRON_JOBS", [
+            "json" => "yes",
+        ], true);
+        if (empty($response->data["crons"])) {
+            return [];
+        }
+
+        $result = [];
+        foreach ($response->data["crons"] as $key => $job) {
+            if (is_numeric($key)) {
+                $result[] = [
+                    "cronID"     => $job["id"],
+                    "command"    => $job["command"],
+                    "minute"     => $job["minute"],
+                    "hour"       => $job["hour"],
+                    "dayOfMonth" => $job["day_of_month"],
+                    "month"      => $job["month"],
+                    "dayOfWeek"  => $job["day_of_week"],
+                ];
+            }
+        }
+        return $result;
     }
 
 
